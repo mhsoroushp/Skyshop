@@ -1,0 +1,24 @@
+
+<h2 class="text-2xl font-bold mb-4 p-4">Add New Book</h2>
+
+
+<div class="flex justify-center">
+    <form [formGroup]="bookForm" (ngSubmit)="createBook()" class="flex gap-4">
+        <mat-form-field appearance="fill">
+            <mat-label>Title</mat-label>
+            <input matInput formControlName="title">
+            @if (bookForm.get('title')?.invalid && bookForm.get('title')?.touched){
+                <mat-error>Title is required.</mat-error>
+            }
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Author</mat-label>
+            <input matInput formControlName="author">
+            @if (bookForm.get('author')?.invalid && bookForm.get('author')?.touched){
+                <mat-error>Author is required.</mat-error>
+            }
+        </mat-form-field>
+
+        <button matButton="filled" type="submit" [disabled]="!bookForm.valid">Add Book</button>
+    </form> 
+</div>

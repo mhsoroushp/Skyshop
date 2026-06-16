@@ -1,0 +1,9 @@
+.app-shell {
+  display: flex;
+  min-height: calc(100vh - 120px);
+}
+
+.content {
+  flex: 1;
+  background: #fff;
+}

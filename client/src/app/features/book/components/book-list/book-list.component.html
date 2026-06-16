@@ -1,0 +1,18 @@
+<h2 class="text-2xl font-bold mb-4 p-4">List of Books</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 pl-4 pr-4 pb-4">
+    <ng-container *ngFor="let book of books; trackBy: trackById">
+        <app-book-card 
+            [book]="book"
+            (favorite)="onFavorite($event)">
+        </app-book-card>
+    </ng-container>
+</div>
+
+<div class="w-full flex justify-center mt-6">
+  <mat-paginator
+    [length]="request.totalCount"
+    [pageSize]="request.pageSize"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+</div>

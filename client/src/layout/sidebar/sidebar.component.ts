@@ -1,0 +1,48 @@
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-sidebar',
+  standalone: true,
+  imports: [RouterLink],
+  template: `
+    <aside class="sidebar">
+      <h3>Menu</h3>
+      <nav>
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/users">Users</a>
+        <a routerLink="/auth">Auth</a>
+        <a routerLink="/books">Books</a>
+        <a routerLink="/create-book">Create Book</a>
+      </nav>
+    </aside>
+  `,
+  styles: [`
+    .sidebar {
+      width: 240px;
+      background: #405175;
+      padding: 16px;
+      border-right: 1px solid #e5e7eb;
+      min-height: 100vh;
+    }
+
+    nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    a {
+      color: #111827;
+      text-decoration: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+
+    a:hover {
+      background: #e5e7eb;
+    }
+  `]
+})
+export class SidebarComponent {}
