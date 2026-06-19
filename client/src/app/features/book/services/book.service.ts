@@ -27,7 +27,7 @@ export class BookService {
 
     return this.http.get<BookPaging>(
       this.baseUrl,
-      { params }
+      { params, withCredentials:true},
     );
   }
 

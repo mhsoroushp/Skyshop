@@ -1,12 +1,26 @@
+using API.Middleware;
 using Core;
 using Core.Interfaces;
 using Core.Models;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("Redis")
+        ?? throw new Exception("Cannot get redis connection string");
+    var configuation = new ConfigurationOptions
+    {
+        EndPoints = { connectionString }
+    };
+    return ConnectionMultiplexer.Connect(configuation);
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -38,6 +52,8 @@ app.UseCors(x => x
     .AllowAnyMethod()
     .AllowCredentials()
     .WithOrigins("http://localhost:4200", "https://localhost:4200"));
+
+app.UseMiddleware<AnonymousSessionMiddleware>();
 
 app.UseHttpsRedirection();
 
