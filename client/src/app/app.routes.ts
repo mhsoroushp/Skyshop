@@ -8,9 +8,12 @@ import { authGuard } from './core/guards/auth.guard';
 import { LoginPage } from './features/auth/pages/login-page/login-page';
 import { canDeactivateGuard } from './core/guards/can-deactivate.guard';
 import { ShopHomeComponent } from './features/shop/page/shop-home.component';
+import { ShowBasketListComponent } from './features/basket/components/show/show-basket-list.component';
 
 export const routes: Routes = [
   {path: 'users', component: UsersPage},
+
+  {path: 'show-basket-list', component: ShowBasketListComponent},
 
   {path: 'books', 
     loadComponent: () => import('./features/book/components/book-list/book-list.component')

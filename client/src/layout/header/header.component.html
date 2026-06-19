@@ -1,11 +1,20 @@
 <header class="header">
-    <h2>SkyShop</h2>
-    <nav>
-      <a href="#">Dashboard</a>
-      <a href="#">Users</a>
-      <a href="#">Profile</a>
-    </nav>
-    <mat-menu>
-      <mat-icon>shopping_cart</mat-icon>
-    </mat-menu>
+  <h2>SkyShop</h2>
+
+  <nav>
+    <a href="#">Dashboard</a>
+    <a href="#">Users</a>
+    <a href="#">Profile</a>
+  </nav>
+
+  <a
+    class="cart-link custom-badge mt-2 mr-2"
+    routerLink="/show-basket-list"
+    routerLinkActive="active"
+    aria-label="Open basket"
+    [matBadge]="showBasketService.basketItemCount()"
+    matBadgeSize="large"
+  >
+    <mat-icon>shopping_cart</mat-icon>
+  </a>
 </header>

@@ -1,0 +1,105 @@
+<div class="basket-page">
+  <!-- Left Side: Product List -->
+  <div class="basket-left">
+    <h2 class="basket-title">Your Basket</h2>
+    
+    @if (showBasketService.basketItems().length === 0) {
+      <div class="empty-basket">
+        <mat-icon class="empty-icon">shopping_bag</mat-icon>
+        <p>Your basket is empty</p>
+        <a routerLink="/" class="empty-link">Add some products</a>
+      </div>
+    } @else {
+      <div class="product-list">
+        @for (item of showBasketService.basketItems(); track item.productId) {
+          <div class="product-item">
+            <!-- Product Image -->
+            <div class="product-image-wrapper">
+              <!-- <img 
+                [src]="'https://via.placeholder.com/60x60?text=P' + item.productId" 
+                class="product-image"
+                (error)="handleImageError($event)"
+              /> -->
+            </div>
+            
+            <!-- Product Info, Delete, Quantity, Price -->
+            <div class="product-content">
+              <div class="product-info">
+                <h3 class="product-title">{{ item.productName || ('Product #' + item.productId) }}</h3>
+                <p class="product-description">Selected item ID: {{ item.productId }}</p>
+              </div>
+              
+              <div class="product-actions">
+                <!-- Delete Button -->
+                <button 
+                  class="btn-delete" 
+                  mat-button 
+                  color="warn"
+                  (click)="removeFromBasket(item.productId)"
+                >
+                  <mat-icon>delete</mat-icon>
+                  Delete
+                </button>
+                
+                <!-- Quantity Input -->
+                <div class="quantity-wrapper">
+                  <label class="quantity-label">Quantity:</label>
+                  <input 
+                    type="number" 
+                    class="quantity-input"
+                    [value]="item.quantity"
+                    min="1"
+                    max="99"
+                    (input)="updateQuantity(item.productId, $event)"
+                  />
+                </div>
+                
+                <!-- Price -->
+                <div class="price-wrapper">
+                  <span class="price-label">Price:</span>
+                  <span class="product-price">{{ item.price | currency:'CHF':'symbol':'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      
+      <!-- Total Price -->
+      <div class="basket-total">
+        <span class="total-label">Total:</span>
+        <span class="total-price">{{ totalPrice() | currency:'CHF':'symbol':'1.2-2' }}</span>
+      </div>
+    }
+  </div>
+  
+  <!-- Right Side: Checkout Button -->
+  <div class="basket-right">
+    <div class="checkout-card">
+      <h3 class="checkout-title">Ready to Checkout?</h3>
+      <p class="checkout-description">
+        {{ showBasketService.basketItems().length }} item(s) in your basket
+      </p>
+      <button 
+        class="btn-checkout" 
+        mat-flat-button 
+        color="primary"
+        routerLink="/kasse"
+      >
+        <mat-icon>cart_checkout</mat-icon>
+        Zur Kasse
+      </button>
+
+      <button
+        class="btn-delete"
+        mat-button
+        color="warn"
+        type="button"
+        (click)="clearBasket()"
+      >
+        <mat-icon>delete_sweep</mat-icon>
+        Clear Basket
+      </button>
+    </div>
+  </div>
+</div>
