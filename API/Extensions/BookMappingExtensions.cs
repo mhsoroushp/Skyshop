@@ -12,7 +12,8 @@ public static class BookMappingExtensions
         {
             Title = bookDto.Title,
             Author = bookDto.Author,
-            Description = bookDto.Description
+            Description = bookDto.Description,
+            Price = bookDto.Price
         };
     }
 
@@ -23,7 +24,8 @@ public static class BookMappingExtensions
             Id = book.Id,
             Title = book.Title,
             Author = book.Author,
-            Description = book.Description
+            Description = book.Description,
+            Price = book.Price
         };
     }
 

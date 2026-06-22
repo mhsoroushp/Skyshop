@@ -10,7 +10,10 @@
   <img mat-card-image src="https://material.angular.dev/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">
   <mat-card-content>
     <p>
-      Some description about the book.
+      {{book.description}}
+    </p>
+    <p>
+      Price: {{book.price | currency}}
     </p>
   </mat-card-content>
   <mat-card-actions>

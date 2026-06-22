@@ -19,14 +19,16 @@ export class CreateBookComponent implements Deactivate {
 
     bookForm = new FormGroup({
         title: new FormControl('', [Validators.required]),
-        author: new FormControl('', [Validators.required])
+        author: new FormControl('', [Validators.required]), 
+        description: new FormControl('', [Validators.required]),
+        price: new FormControl('', [Validators.required, Validators.min(0)])
     });
 
     createBook(): void {
         if (this.bookForm.valid) {
-            const { title, author } = this.bookForm.value;
+            const { title, author, description, price } = this.bookForm.value;
             const newBookId = this.bookService.books().length + 1; // Simple ID generation
-            const newBook: Book = { id: newBookId, title: title!, author: author! };
+            const newBook: Book = { id: newBookId, title: title!, author: author!, description: description!, price: Number(price)! };
             this.bookService.addBook(newBook);
             this.bookForm.reset();
         }

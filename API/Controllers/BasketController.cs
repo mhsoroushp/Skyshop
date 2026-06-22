@@ -8,18 +8,18 @@ namespace API.Controllers;
 [Route("api/basket")]
 public class BasketController : ControllerBase
 {
-    private readonly ICartRepository _cartRepository;
+    private readonly ICartService _cartService;
 
-    public BasketController(ICartRepository cartRepository)
+    public BasketController(ICartService cartService)
     {
-        _cartRepository = cartRepository;
+        _cartService = cartService;
     }
 
     // POST: api/basket/add
     [HttpPost("add")]
     public async Task<IActionResult> AddToBasket(AddToBasketRequest request)
     {
-        await _cartRepository.AddToBasket(request.ProductId, request.Quantity);
+        await _cartService.AddToBasket(request.ProductId, request.Quantity);
         return Ok(new { Message = "Product added to basket" });
     }
 
@@ -27,7 +27,7 @@ public class BasketController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetBasket()
     {
-        var basketItems = await _cartRepository.GetBasket();
+        var basketItems = await _cartService.GetBasket();
         return Ok(basketItems);
     }
 
@@ -35,7 +35,7 @@ public class BasketController : ControllerBase
     [HttpDelete("product/{productId}")]
     public async Task<IActionResult> RemoveFromBasket(Guid productId)
     {
-        await _cartRepository.RemoveFromBasket(productId);
+        await _cartService.RemoveFromBasket(productId);
         return Ok(new { Message = "Product removed from basket" });
     }
 
@@ -43,7 +43,7 @@ public class BasketController : ControllerBase
     [HttpPut("product/{productId}/quantity")]
     public async Task<IActionResult> UpdateQuantity(Guid productId, UpdateQuantityRequest request)
     {
-        await _cartRepository.UpdateQuantity(productId, request.Quantity);
+        await _cartService.UpdateQuantity(productId, request.Quantity);
         return Ok(new { Message = "Quantity updated" });
     }
 
@@ -51,7 +51,7 @@ public class BasketController : ControllerBase
     [HttpDelete("clear")]
     public async Task<IActionResult> ClearBasket()
     {
-        await _cartRepository.ClearBasket();
+        await _cartService.ClearBasket();
         return Ok(new { Message = "Basket cleared" });
     }
 
@@ -59,7 +59,7 @@ public class BasketController : ControllerBase
     [HttpGet("count")]
     public async Task<IActionResult> GetBasketCount()
     {
-        var count = await _cartRepository.GetBasketItemCount();
+        var count = await _cartService.GetBasketItemCount();
         return Ok(new { Count = count });
     }
 
@@ -67,7 +67,7 @@ public class BasketController : ControllerBase
     [HttpGet("total")]
     public async Task<IActionResult> GetBasketTotal()
     {
-        var total = await _cartRepository.GetBasketTotalPrice();
+        var total = await _cartService.GetBasketTotalPrice();
         return Ok(new { Total = total });
     }
 }

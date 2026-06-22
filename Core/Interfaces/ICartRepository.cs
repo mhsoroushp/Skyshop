@@ -1,13 +1,17 @@
 namespace Core.Interfaces;
 public interface ICartRepository
 {
-    Task AddToBasket(Guid productId, int quantity);
-    Task<BasketItem[]> GetBasket();
-    Task RemoveFromBasket(Guid productId);
-    Task UpdateQuantity(Guid productId, int quantity);
-    Task ClearBasket();
-    Task<int> GetBasketItemCount();
-    Task<decimal> GetBasketTotalPrice();
+    Task AddToBasket(string basketKey, Guid productId, int quantity);
+    Task<BasketQuantityItem[]> GetBasket(string basketKey);
+    Task RemoveFromBasket(string basketKey, Guid productId);
+    Task UpdateQuantity(string basketKey, Guid productId, int quantity);
+    Task ClearBasket(string basketKey);
+}
+
+public class BasketQuantityItem
+{
+    public Guid ProductId { get; set; }
+    public int Quantity { get; set; }
 }
 
 public class BasketItem
