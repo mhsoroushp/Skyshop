@@ -1,10 +1,10 @@
 namespace Core.Interfaces;
 public interface ICartRepository
 {
-    Task AddToBasket(int productId, int quantity);
+    Task AddToBasket(Guid productId, int quantity);
     Task<BasketItem[]> GetBasket();
-    Task RemoveFromBasket(int productId);
-    Task UpdateQuantity(int productId, int quantity);
+    Task RemoveFromBasket(Guid productId);
+    Task UpdateQuantity(Guid productId, int quantity);
     Task ClearBasket();
     Task<int> GetBasketItemCount();
     Task<decimal> GetBasketTotalPrice();
@@ -12,7 +12,7 @@ public interface ICartRepository
 
 public class BasketItem
 {
-    public int ProductId { get; set; }
+    public Guid ProductId { get; set; }
     public int Quantity { get; set; }
     public decimal Price { get; set; }
     public string? ProductName { get; set; }

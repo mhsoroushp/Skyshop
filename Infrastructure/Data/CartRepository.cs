@@ -16,7 +16,7 @@ public class CartRepository : ICartRepository
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task AddToBasket(int productId, int quantity)
+    public async Task AddToBasket(Guid productId, int quantity)
     {
         string basketKey = GetBasketKey();
         
@@ -43,7 +43,7 @@ public class CartRepository : ICartRepository
         {
             // var product = await _productService.GetProductByIdAsync(int.Parse(entry.Name));
 
-            if (!int.TryParse(entry.Name.ToString(), out var productId))
+            if (!Guid.TryParse(entry.Name.ToString(), out var productId))
             {
                 continue;
             }
@@ -60,13 +60,13 @@ public class CartRepository : ICartRepository
         return basketItems.ToArray();
     }
 
-    public async Task RemoveFromBasket(int productId)
+    public async Task RemoveFromBasket(Guid productId)
     {
         string basketKey = GetBasketKey();
         await _redis.HashDeleteAsync(basketKey, productId.ToString());
     }
 
-    public async Task UpdateQuantity(int productId, int quantity)
+    public async Task UpdateQuantity(Guid productId, int quantity)
     {
         string basketKey = GetBasketKey();
         

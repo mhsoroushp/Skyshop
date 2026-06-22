@@ -23,7 +23,7 @@ export class ShopHomeComponent{
 
     addToBasket(): void {
         if(this.selectedBook){
-            this.showBasketService.addToBasket(500, 1).subscribe({
+            this.showBasketService.addToBasket(this.selectedBook.id, 1).subscribe({
                 next: () => {
                     console.log('Product added to basket successfully');
                 },

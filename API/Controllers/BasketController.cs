@@ -33,7 +33,7 @@ public class BasketController : ControllerBase
 
     // DELETE: api/basket/product/100
     [HttpDelete("product/{productId}")]
-    public async Task<IActionResult> RemoveFromBasket(int productId)
+    public async Task<IActionResult> RemoveFromBasket(Guid productId)
     {
         await _cartRepository.RemoveFromBasket(productId);
         return Ok(new { Message = "Product removed from basket" });
@@ -41,7 +41,7 @@ public class BasketController : ControllerBase
 
     // PUT: api/basket/product/100/quantity/5
     [HttpPut("product/{productId}/quantity")]
-    public async Task<IActionResult> UpdateQuantity(int productId, UpdateQuantityRequest request)
+    public async Task<IActionResult> UpdateQuantity(Guid productId, UpdateQuantityRequest request)
     {
         await _cartRepository.UpdateQuantity(productId, request.Quantity);
         return Ok(new { Message = "Quantity updated" });
@@ -75,7 +75,7 @@ public class BasketController : ControllerBase
 // Request Models
 public class AddToBasketRequest
 {
-    public int ProductId { get; set; }
+    public Guid ProductId { get; set; }
     public int Quantity { get; set; }
 }
 
