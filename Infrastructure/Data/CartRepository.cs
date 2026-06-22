@@ -47,7 +47,9 @@ public class CartRepository : ICartRepository
             {
                 continue;
             }
-            
+
+            // TODO :
+            // Call to product service to get product details (name, price) for each productId
             basketItems.Add(new BasketItem
             {
                 ProductId = productId,
