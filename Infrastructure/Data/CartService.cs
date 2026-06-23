@@ -29,14 +29,21 @@ public class CartService : ICartService
 		var basketEntries = await _cartRepository.GetBasket(basketKey);
 
 		if (basketEntries.Length == 0)
+		{
+			Console.WriteLine("Basket is empty.");
 			return Array.Empty<BasketItem>();
+		}
+				
 
 		var basketItems = new List<BasketItem>();
 		foreach (var entry in basketEntries)
 		{
+			Console.WriteLine($"Fetching book for ProductId: {entry.ProductId}");
+
 			var book = await _bookRepository.GetByIdAsync(entry.ProductId);
 			if (book is null)
 			{
+				Console.WriteLine($"Book not found for ProductId: {entry.ProductId}. Removing from basket.");
 				await _cartRepository.RemoveFromBasket(basketKey, entry.ProductId);
 				continue;
 			}

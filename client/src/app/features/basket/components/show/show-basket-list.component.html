@@ -84,10 +84,11 @@
         class="btn-checkout" 
         mat-flat-button 
         color="primary"
-        routerLink="/kasse"
+        routerLink="/checkout"
+        [disabled]="showBasketService.basketItems().length === 0"
       >
         <mat-icon>cart_checkout</mat-icon>
-        Zur Kasse
+        Checkout
       </button>
 
       <button

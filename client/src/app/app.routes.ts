@@ -9,11 +9,17 @@ import { LoginPage } from './features/auth/pages/login-page/login-page';
 import { canDeactivateGuard } from './core/guards/can-deactivate.guard';
 import { ShopHomeComponent } from './features/shop/page/shop-home.component';
 import { ShowBasketListComponent } from './features/basket/components/show/show-basket-list.component';
+import { CheckoutComponent } from './features/checkout/checkout.component';
+import { PaymentComponent } from './features/payment/payment.component';
+import { OrderConfirmationComponent } from './features/order-confirmation/order-confirmation.component';
 
 export const routes: Routes = [
   {path: 'users', component: UsersPage},
 
   {path: 'show-basket-list', component: ShowBasketListComponent},
+  {path: 'checkout', component: CheckoutComponent},
+  {path: 'payment/:orderId', component: PaymentComponent},
+  {path: 'order-confirmation/:orderId', component: OrderConfirmationComponent},
 
   {path: 'books', 
     loadComponent: () => import('./features/book/components/book-list/book-list.component')
