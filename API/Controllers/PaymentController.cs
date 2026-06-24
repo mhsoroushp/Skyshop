@@ -2,8 +2,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces;
 using API.DTOs;
+using API.Hubs;
 using Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.SignalR;
 using Stripe;
 
 namespace API.Controllers;
@@ -17,6 +19,7 @@ public class PaymentController : ControllerBase
     private readonly ICartRepository _cartRepository;
     private readonly IStripeService _stripeService;
     private readonly IStripeWebhookEventService _stripeWebhookEventService;
+    private readonly IHubContext<PaymentStatusHub> _hubContext;
     private readonly IConfiguration _configuration;
 
     public PaymentController(
@@ -25,6 +28,7 @@ public class PaymentController : ControllerBase
         ICartRepository cartRepository,
         IStripeService stripeService,
         IStripeWebhookEventService stripeWebhookEventService,
+        IHubContext<PaymentStatusHub> hubContext,
         IConfiguration configuration)
     {
         _paymentService = paymentService;
@@ -32,6 +36,7 @@ public class PaymentController : ControllerBase
         _cartRepository = cartRepository;
         _stripeService = stripeService;
         _stripeWebhookEventService = stripeWebhookEventService;
+        _hubContext = hubContext;
         _configuration = configuration;
     }
 
@@ -288,6 +293,12 @@ public class PaymentController : ControllerBase
                 await _cartRepository.ClearBasket(order.SessionId);
             }
 
+            await PublishPaymentStatusUpdate(
+                payment.OrderId,
+                Core.Models.PaymentStatus.Succeeded.ToString(),
+                Core.Models.OrderStatus.Confirmed.ToString(),
+                "Payment succeeded");
+
             Console.WriteLine($"Payment {payment.Id} updated to Succeeded, Order {payment.OrderId} updated to Confirmed");
         }
         catch (Exception ex)
@@ -330,6 +341,12 @@ public class PaymentController : ControllerBase
             await _orderService.UpdateOrderStatusAsync(
                 payment.OrderId,
                 Core.Models.OrderStatus.Cancelled);
+
+            await PublishPaymentStatusUpdate(
+                payment.OrderId,
+                Core.Models.PaymentStatus.Failed.ToString(),
+                Core.Models.OrderStatus.Cancelled.ToString(),
+                errorMessage);
 
             Console.WriteLine($"Payment {payment.Id} updated to Failed, Order {payment.OrderId} updated to Cancelled");
         }
@@ -376,6 +393,12 @@ public class PaymentController : ControllerBase
                 payment.OrderId,
                 Core.Models.OrderStatus.Cancelled);
 
+            await PublishPaymentStatusUpdate(
+                payment.OrderId,
+                Core.Models.PaymentStatus.Cancelled.ToString(),
+                Core.Models.OrderStatus.Cancelled.ToString(),
+                "Payment canceled");
+
             Console.WriteLine($"Payment {payment.Id} updated to Cancelled, Order {payment.OrderId} updated to Cancelled");
         }
         catch (Exception ex)
@@ -407,6 +430,12 @@ public class PaymentController : ControllerBase
             var errorMessage = charge.FailureMessage ?? "Charge failed";
             await _paymentService.UpdatePaymentErrorAsync(payment.Id, errorMessage);
 
+            await PublishPaymentStatusUpdate(
+                payment.OrderId,
+                Core.Models.PaymentStatus.Failed.ToString(),
+                Core.Models.OrderStatus.Cancelled.ToString(),
+                errorMessage);
+
             Console.WriteLine($"Payment {payment.Id} error updated: {errorMessage}");
         }
         catch (Exception ex)
@@ -430,5 +459,19 @@ public class PaymentController : ControllerBase
             CreatedAt = payment.CreatedAt,
             ProcessedAt = payment.ProcessedAt
         };
+    }
+
+    private async Task PublishPaymentStatusUpdate(Guid orderId, string paymentStatus, string orderStatus, string message)
+    {
+        await _hubContext.Clients
+            .Group(PaymentStatusHub.OrderGroup(orderId))
+            .SendAsync("PaymentStatusUpdated", new
+            {
+                orderId,
+                paymentStatus,
+                orderStatus,
+                message,
+                updatedAt = DateTime.UtcNow
+            });
     }
 }

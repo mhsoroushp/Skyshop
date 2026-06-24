@@ -19,6 +19,12 @@
         <p>Thank you for your purchase. Your order has been successfully processed.</p>
       </div>
 
+      @if (realtimeStatusMessage) {
+        <div class="confirmation-message">
+          <p><strong>{{ realtimeStatusMessage }}</strong></p>
+        </div>
+      }
+
       <!-- Order Details -->
       <div class="order-details">
         <h2>Order Details</h2>
