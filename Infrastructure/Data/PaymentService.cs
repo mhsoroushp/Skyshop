@@ -14,6 +14,10 @@ public class PaymentService : IPaymentService
 
     public async Task<Payment> CreatePaymentAsync(Guid orderId, decimal amount)
     {
+        var existingPayment = await _paymentRepository.GetByOrderIdAsync(orderId);
+        if (existingPayment != null)
+            return existingPayment;
+
         var payment = new Payment
         {
             OrderId = orderId,

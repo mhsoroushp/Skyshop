@@ -61,8 +61,27 @@ public class PaymentController : ControllerBase
             if (order == null)
                 return NotFound(new { Message = "Order not found" });
 
-            // Create payment record
+            // Idempotent payment creation: reuse existing payment for this order if it already exists.
             var payment = await _paymentService.CreatePaymentAsync(order.Id, order.TotalAmount);
+
+            if (payment.Status == Core.Models.PaymentStatus.Succeeded)
+            {
+                return BadRequest(new { Message = "Payment already completed for this order" });
+            }
+
+            if (!string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
+            {
+                var existingClientSecret = await _stripeService.GetPaymentIntentClientSecretAsync(payment.StripePaymentIntentId);
+
+                if (!string.IsNullOrWhiteSpace(existingClientSecret))
+                {
+                    return Ok(new CreatePaymentIntentResponse
+                    {
+                        ClientSecret = existingClientSecret,
+                        PaymentIntentId = payment.StripePaymentIntentId
+                    });
+                }
+            }
 
             // Create Stripe payment intent
             var clientSecret = await _stripeService.CreatePaymentIntentAsync(

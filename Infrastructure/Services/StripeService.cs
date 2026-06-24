@@ -7,6 +7,7 @@ namespace Infrastructure.Services;
 public interface IStripeService
 {
     Task<string> CreatePaymentIntentAsync(Guid orderId, decimal amount, string? email = null);
+    Task<string?> GetPaymentIntentClientSecretAsync(string paymentIntentId);
     Task<Payment?> ConfirmPaymentAsync(string paymentIntentId, Guid paymentId);
 }
 
@@ -44,7 +45,12 @@ public class StripeService : IStripeService
                 createOptions.ReceiptEmail = email;
             }
 
-            var paymentIntent = await paymentIntentService.CreateAsync(createOptions);
+            var requestOptions = new Stripe.RequestOptions
+            {
+                IdempotencyKey = $"payment-intent-order-{orderId}"
+            };
+
+            var paymentIntent = await paymentIntentService.CreateAsync(createOptions, requestOptions);
 
             // Update payment with Stripe intent ID
             var existingPayment = await _paymentService.GetPaymentByOrderIdAsync(orderId);
@@ -59,6 +65,23 @@ public class StripeService : IStripeService
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Failed to create Stripe payment intent: {ex.Message}", ex);
+        }
+    }
+
+    public async Task<string?> GetPaymentIntentClientSecretAsync(string paymentIntentId)
+    {
+        try
+        {
+            Stripe.StripeConfiguration.ApiKey = _stripeSecretKey;
+
+            var paymentIntentService = new Stripe.PaymentIntentService();
+            var paymentIntent = await paymentIntentService.GetAsync(paymentIntentId);
+
+            return paymentIntent?.ClientSecret;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to retrieve Stripe payment intent: {ex.Message}", ex);
         }
     }
 
