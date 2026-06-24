@@ -4,7 +4,9 @@ using Core;
 using Core.Interfaces;
 using Core.Models;
 using Infrastructure.Data;
+using Infrastructure.Identity;
 using Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -20,6 +22,10 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStripeWebhookEventService, StripeWebhookEventService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
+builder.Services.AddAuthorization();
+builder.Services
+    .AddIdentityApiEndpoints<AppUser>()
+    .AddEntityFrameworkStores<BookContext>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Redis")
@@ -67,10 +73,10 @@ app.UseCors(x => x
     .WithOrigins("http://localhost:4200", "https://localhost:4200")
     .SetIsOriginAllowed(_ => true));
 
-app.UseMiddleware<AnonymousSessionMiddleware>();
-
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseMiddleware<AnonymousSessionMiddleware>();
 app.UseAuthorization();
 
 // Seed data
@@ -119,6 +125,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
+app.MapIdentityApi<AppUser>();
 app.MapHub<PaymentStatusHub>("/hubs/payment-status");
 
 app.Run();

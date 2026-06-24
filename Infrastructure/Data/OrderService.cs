@@ -1,6 +1,7 @@
 using Core.Interfaces;
 using Core.Models;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Infrastructure.Data;
 
@@ -38,6 +39,7 @@ public class OrderService : IOrderService
         var order = new Order
         {
             SessionId = sessionId,
+            OwnerUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier),
             TotalAmount = totalAmount,
             CustomerEmail = customerEmail,
             CustomerName = customerName,

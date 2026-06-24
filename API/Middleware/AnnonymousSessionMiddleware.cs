@@ -1,4 +1,5 @@
 using StackExchange.Redis;
+using System.Security.Claims;
 
 namespace API.Middleware;
 
@@ -19,7 +20,9 @@ public class AnonymousSessionMiddleware(RequestDelegate next, IConnectionMultipl
 
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            string userId = context.User.Identity?.Name!;
+            string userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? context.User.Identity?.Name
+                ?? string.Empty;
             if (!string.IsNullOrEmpty(userId))
             {
                 context.Items["BasketKey"] = $"basket:user:{userId}";

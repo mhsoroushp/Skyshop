@@ -9,12 +9,22 @@
 
 nav {
   display: flex;
+  align-items: center;
   gap: 12px;
+}
+
+.auth-label {
+  color: #d1d5db;
+  font-size: 14px;
 }
 
 a {
   color: white;
   text-decoration: none;
+}
+
+button {
+  color: white !important;
 }
 
 .cart-link {

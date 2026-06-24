@@ -1,9 +1,11 @@
 using Core.Models;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
 
-public class BookContext: DbContext
+public class BookContext: IdentityDbContext<AppUser>
 {
     public BookContext(DbContextOptions<BookContext> options)
         : base(options)
@@ -26,6 +28,10 @@ public class BookContext: DbContext
             .WithOne(oi => oi.Order)
             .HasForeignKey(oi => oi.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.OwnerUserId)
+            .HasMaxLength(450);
 
         // Payment configuration
         modelBuilder.Entity<Payment>()

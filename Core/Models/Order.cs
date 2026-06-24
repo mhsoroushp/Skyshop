@@ -4,6 +4,7 @@ public class Order
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public required string SessionId { get; set; }
+    public string? OwnerUserId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public decimal TotalAmount { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.Pending;

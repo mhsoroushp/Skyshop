@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces;
 using API.DTOs;
 using Core.Models;
+using System.Security.Claims;
 
 namespace API.Controllers;
 
@@ -26,6 +27,9 @@ public class OrderController : ControllerBase
         var order = await _orderService.GetOrderByIdAsync(id);
         if (order == null)
             return NotFound(new { Message = "Order not found" });
+
+        if (!CanAccessOrder(order))
+            return Forbid();
 
         return Ok(MapToDto(order));
     }
@@ -75,7 +79,23 @@ public class OrderController : ControllerBase
         if (order == null)
             return NotFound(new { Message = "Order not found" });
 
+        if (!CanAccessOrder(order))
+            return Forbid();
+
         return Ok(MapToDto(order));
+    }
+
+    private bool CanAccessOrder(Order order)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrWhiteSpace(userId))
+            return string.Equals(order.OwnerUserId, userId, StringComparison.Ordinal);
+
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext?.Items.TryGetValue("BasketKey", out var basketKey) == true && basketKey is string currentBasketKey)
+            return string.Equals(order.SessionId, currentBasketKey, StringComparison.Ordinal);
+
+        return false;
     }
 
     // TODO: move this the extension method

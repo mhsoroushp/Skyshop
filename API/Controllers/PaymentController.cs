@@ -6,6 +6,7 @@ using API.Hubs;
 using Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 using Stripe;
 
 namespace API.Controllers;
@@ -48,6 +49,13 @@ public class PaymentController : ControllerBase
         if (payment == null)
             return NotFound(new { Message = "Payment not found" });
 
+        var order = await _orderService.GetOrderByIdAsync(payment.OrderId);
+        if (order == null)
+            return NotFound(new { Message = "Order not found for this payment" });
+
+        if (!CanAccessOrder(order))
+            return Forbid();
+
         return Ok(MapToDto(payment));
     }
 
@@ -58,6 +66,13 @@ public class PaymentController : ControllerBase
         var payment = await _paymentService.GetPaymentByOrderIdAsync(orderId);
         if (payment == null)
             return NotFound(new { Message = "Payment not found for this order" });
+
+        var order = await _orderService.GetOrderByIdAsync(orderId);
+        if (order == null)
+            return NotFound(new { Message = "Order not found" });
+
+        if (!CanAccessOrder(order))
+            return Forbid();
 
         return Ok(MapToDto(payment));
     }
@@ -473,5 +488,17 @@ public class PaymentController : ControllerBase
                 message,
                 updatedAt = DateTime.UtcNow
             });
+    }
+
+    private bool CanAccessOrder(Core.Models.Order order)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrWhiteSpace(userId))
+            return string.Equals(order.OwnerUserId, userId, StringComparison.Ordinal);
+
+        if (HttpContext.Items.TryGetValue("BasketKey", out var basketKey) && basketKey is string currentBasketKey)
+            return string.Equals(order.SessionId, currentBasketKey, StringComparison.Ordinal);
+
+        return false;
     }
 }
