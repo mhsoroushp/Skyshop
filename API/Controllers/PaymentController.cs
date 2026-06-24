@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces;
 using API.DTOs;
 using Infrastructure.Services;
+using Microsoft.Extensions.Configuration;
+using Stripe;
 
 namespace API.Controllers;
 
@@ -13,15 +15,18 @@ public class PaymentController : ControllerBase
     private readonly IPaymentService _paymentService;
     private readonly IOrderService _orderService;
     private readonly IStripeService _stripeService;
+    private readonly IConfiguration _configuration;
 
     public PaymentController(
         IPaymentService paymentService,
         IOrderService orderService,
-        IStripeService stripeService)
+        IStripeService stripeService,
+        IConfiguration configuration)
     {
         _paymentService = paymentService;
         _orderService = orderService;
         _stripeService = stripeService;
+        _configuration = configuration;
     }
 
     // GET: api/payments/{id}
@@ -31,6 +36,17 @@ public class PaymentController : ControllerBase
         var payment = await _paymentService.GetPaymentByIdAsync(id);
         if (payment == null)
             return NotFound(new { Message = "Payment not found" });
+
+        return Ok(MapToDto(payment));
+    }
+
+    // GET: api/payments/order/{orderId}
+    [HttpGet("order/{orderId}")]
+    public async Task<IActionResult> GetPaymentByOrderId(Guid orderId)
+    {
+        var payment = await _paymentService.GetPaymentByOrderIdAsync(orderId);
+        if (payment == null)
+            return NotFound(new { Message = "Payment not found for this order" });
 
         return Ok(MapToDto(payment));
     }
@@ -120,18 +136,230 @@ public class PaymentController : ControllerBase
         try
         {
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-            
-            // In production, verify webhook signature
-            // For now, just parse and handle the event
+            var stripeEvent = VerifyAndParseWebhookEvent(json);
 
-            var payment = new Core.Models.Payment();
-            // Process webhook (implementation depends on Stripe webhook type)
+            if (stripeEvent == null)
+                return BadRequest(new { Message = "Invalid webhook signature" });
+
+            // Handle different event types
+            switch (stripeEvent.Type)
+            {
+                case "payment_intent.succeeded":
+                    await HandlePaymentIntentSucceeded(stripeEvent);
+                    break;
+
+                case "payment_intent.payment_failed":
+                    await HandlePaymentIntentFailed(stripeEvent);
+                    break;
+
+                case "payment_intent.canceled":
+                    await HandlePaymentIntentCanceled(stripeEvent);
+                    break;
+
+                case "charge.failed":
+                    await HandleChargeFailed(stripeEvent);
+                    break;
+
+                default:
+                    Console.WriteLine($"Unhandled webhook event type: {stripeEvent.Type}");
+                    break;
+            }
 
             return Ok(new { Received = true });
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Webhook error: {ex.Message}");
             return BadRequest(new { Message = ex.Message });
+        }
+    }
+
+    private Stripe.Event? VerifyAndParseWebhookEvent(string json)
+    {
+        try
+        {
+            var webhookSecret = _configuration["Stripe:WebhookSecret"];
+
+            if (string.IsNullOrWhiteSpace(webhookSecret) || webhookSecret.Contains("YOUR_WEBHOOK_SECRET"))
+            {
+                Console.WriteLine("Warning: Webhook secret not configured properly");
+                // For development without real webhook secret, parse without verification
+                return EventUtility.ParseEvent(json);
+            }
+
+            var stripeSignature = Request.Headers["Stripe-Signature"];
+            var stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, webhookSecret);
+
+            return stripeEvent;
+        }
+        catch (StripeException ex)
+        {
+            Console.WriteLine($"Stripe webhook verification failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    private async Task HandlePaymentIntentSucceeded(Stripe.Event stripeEvent)
+    {
+        try
+        {
+            var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+            if (paymentIntent == null)
+                return;
+
+            Console.WriteLine($"Processing payment_intent.succeeded for {paymentIntent.Id}");
+
+            // Find payment by Stripe PaymentIntent ID
+            var payment = await _paymentService.GetPaymentByStripeIntentIdAsync(paymentIntent.Id);
+            if (payment == null)
+            {
+                Console.WriteLine($"Payment not found for PaymentIntent {paymentIntent.Id}");
+                return;
+            }
+
+            // Idempotency: only update if status is not already Succeeded
+            if (payment.Status == Core.Models.PaymentStatus.Succeeded)
+            {
+                Console.WriteLine($"Payment {payment.Id} already marked as Succeeded, skipping");
+                return;
+            }
+
+            // Update payment status
+            await _paymentService.UpdatePaymentStatusAsync(
+                payment.Id,
+                Core.Models.PaymentStatus.Succeeded,
+                paymentIntent.Id);
+
+            // Update order status to Confirmed
+            await _orderService.UpdateOrderStatusAsync(
+                payment.OrderId,
+                Core.Models.OrderStatus.Confirmed);
+
+            Console.WriteLine($"Payment {payment.Id} updated to Succeeded, Order {payment.OrderId} updated to Confirmed");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling payment_intent.succeeded: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task HandlePaymentIntentFailed(Stripe.Event stripeEvent)
+    {
+        try
+        {
+            var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+            if (paymentIntent == null)
+                return;
+
+            Console.WriteLine($"Processing payment_intent.payment_failed for {paymentIntent.Id}");
+
+            // Find payment by Stripe PaymentIntent ID
+            var payment = await _paymentService.GetPaymentByStripeIntentIdAsync(paymentIntent.Id);
+            if (payment == null)
+            {
+                Console.WriteLine($"Payment not found for PaymentIntent {paymentIntent.Id}");
+                return;
+            }
+
+            // Idempotency: only update if status is not already Failed
+            if (payment.Status == Core.Models.PaymentStatus.Failed)
+            {
+                Console.WriteLine($"Payment {payment.Id} already marked as Failed, skipping");
+                return;
+            }
+
+            // Update payment status with error message
+            var errorMessage = paymentIntent.LastPaymentError?.Message ?? "Payment failed";
+            await _paymentService.UpdatePaymentErrorAsync(payment.Id, errorMessage);
+
+            // Update order status to Cancelled
+            await _orderService.UpdateOrderStatusAsync(
+                payment.OrderId,
+                Core.Models.OrderStatus.Cancelled);
+
+            Console.WriteLine($"Payment {payment.Id} updated to Failed, Order {payment.OrderId} updated to Cancelled");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling payment_intent.payment_failed: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task HandlePaymentIntentCanceled(Stripe.Event stripeEvent)
+    {
+        try
+        {
+            var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+            if (paymentIntent == null)
+                return;
+
+            Console.WriteLine($"Processing payment_intent.canceled for {paymentIntent.Id}");
+
+            // Find payment by Stripe PaymentIntent ID
+            var payment = await _paymentService.GetPaymentByStripeIntentIdAsync(paymentIntent.Id);
+            if (payment == null)
+            {
+                Console.WriteLine($"Payment not found for PaymentIntent {paymentIntent.Id}");
+                return;
+            }
+
+            // Idempotency: only update if status is not already Cancelled
+            if (payment.Status == Core.Models.PaymentStatus.Cancelled)
+            {
+                Console.WriteLine($"Payment {payment.Id} already marked as Cancelled, skipping");
+                return;
+            }
+
+            // Update payment status
+            await _paymentService.UpdatePaymentStatusAsync(
+                payment.Id,
+                Core.Models.PaymentStatus.Cancelled,
+                paymentIntent.Id);
+
+            // Update order status to Cancelled
+            await _orderService.UpdateOrderStatusAsync(
+                payment.OrderId,
+                Core.Models.OrderStatus.Cancelled);
+
+            Console.WriteLine($"Payment {payment.Id} updated to Cancelled, Order {payment.OrderId} updated to Cancelled");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling payment_intent.canceled: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task HandleChargeFailed(Stripe.Event stripeEvent)
+    {
+        try
+        {
+            var charge = stripeEvent.Data.Object as Charge;
+            if (charge == null || charge.PaymentIntentId == null)
+                return;
+
+            Console.WriteLine($"Processing charge.failed for {charge.Id}");
+
+            // Find payment by Stripe PaymentIntent ID
+            var payment = await _paymentService.GetPaymentByStripeIntentIdAsync(charge.PaymentIntentId);
+            if (payment == null)
+            {
+                Console.WriteLine($"Payment not found for PaymentIntent {charge.PaymentIntentId}");
+                return;
+            }
+
+            // Update payment status with error message
+            var errorMessage = charge.FailureMessage ?? "Charge failed";
+            await _paymentService.UpdatePaymentErrorAsync(payment.Id, errorMessage);
+
+            Console.WriteLine($"Payment {payment.Id} error updated: {errorMessage}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling charge.failed: {ex.Message}");
+            throw;
         }
     }
 
