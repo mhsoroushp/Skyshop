@@ -14,6 +14,7 @@ public class BookContext: DbContext
     public DbSet<Order> Orders { get; set; } = null!;
     public DbSet<OrderItem> OrderItems { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
+    public DbSet<StripeWebhookEventLog> StripeWebhookEventLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,5 +33,20 @@ public class BookContext: DbContext
             .WithMany()
             .HasForeignKey(p => p.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Stripe webhook event log configuration
+        modelBuilder.Entity<StripeWebhookEventLog>()
+            .HasIndex(e => e.StripeEventId)
+            .IsUnique();
+
+        modelBuilder.Entity<StripeWebhookEventLog>()
+            .Property(e => e.StripeEventId)
+            .HasMaxLength(255)
+            .IsRequired();
+
+        modelBuilder.Entity<StripeWebhookEventLog>()
+            .Property(e => e.EventType)
+            .HasMaxLength(100)
+            .IsRequired();
     }
 }

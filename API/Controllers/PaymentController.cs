@@ -14,18 +14,24 @@ public class PaymentController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
     private readonly IOrderService _orderService;
+    private readonly ICartRepository _cartRepository;
     private readonly IStripeService _stripeService;
+    private readonly IStripeWebhookEventService _stripeWebhookEventService;
     private readonly IConfiguration _configuration;
 
     public PaymentController(
         IPaymentService paymentService,
         IOrderService orderService,
+        ICartRepository cartRepository,
         IStripeService stripeService,
+        IStripeWebhookEventService stripeWebhookEventService,
         IConfiguration configuration)
     {
         _paymentService = paymentService;
         _orderService = orderService;
+        _cartRepository = cartRepository;
         _stripeService = stripeService;
+        _stripeWebhookEventService = stripeWebhookEventService;
         _configuration = configuration;
     }
 
@@ -152,6 +158,8 @@ public class PaymentController : ControllerBase
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> HandleStripeWebhook()
     {
+        string? stripeEventId = null;
+
         try
         {
             var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
@@ -159,6 +167,21 @@ public class PaymentController : ControllerBase
 
             if (stripeEvent == null)
                 return BadRequest(new { Message = "Invalid webhook signature" });
+
+            stripeEventId = stripeEvent.Id;
+            if (string.IsNullOrWhiteSpace(stripeEventId))
+                return BadRequest(new { Message = "Webhook event id is missing" });
+
+            var shouldProcess = await _stripeWebhookEventService.TryStartProcessingAsync(
+                stripeEventId,
+                stripeEvent.Type,
+                json);
+
+            if (!shouldProcess)
+            {
+                Console.WriteLine($"Duplicate webhook event ignored: {stripeEventId}");
+                return Ok(new { Received = true, Duplicate = true });
+            }
 
             // Handle different event types
             switch (stripeEvent.Type)
@@ -184,10 +207,17 @@ public class PaymentController : ControllerBase
                     break;
             }
 
+            await _stripeWebhookEventService.MarkProcessedAsync(stripeEventId);
+
             return Ok(new { Received = true });
         }
         catch (Exception ex)
         {
+            if (!string.IsNullOrWhiteSpace(stripeEventId))
+            {
+                await _stripeWebhookEventService.MarkFailedAsync(stripeEventId, ex.Message);
+            }
+
             Console.WriteLine($"Webhook error: {ex.Message}");
             return BadRequest(new { Message = ex.Message });
         }
@@ -236,23 +266,27 @@ public class PaymentController : ControllerBase
                 return;
             }
 
-            // Idempotency: only update if status is not already Succeeded
-            if (payment.Status == Core.Models.PaymentStatus.Succeeded)
+            // Idempotency: do not rewrite status if already succeeded.
+            // Basket clear remains safe to retry.
+            if (payment.Status != Core.Models.PaymentStatus.Succeeded)
             {
-                Console.WriteLine($"Payment {payment.Id} already marked as Succeeded, skipping");
-                return;
+                await _paymentService.UpdatePaymentStatusAsync(
+                    payment.Id,
+                    Core.Models.PaymentStatus.Succeeded,
+                    paymentIntent.Id);
             }
-
-            // Update payment status
-            await _paymentService.UpdatePaymentStatusAsync(
-                payment.Id,
-                Core.Models.PaymentStatus.Succeeded,
-                paymentIntent.Id);
 
             // Update order status to Confirmed
             await _orderService.UpdateOrderStatusAsync(
                 payment.OrderId,
                 Core.Models.OrderStatus.Confirmed);
+
+            // Clear basket only after webhook-confirmed success.
+            var order = await _orderService.GetOrderByIdAsync(payment.OrderId);
+            if (!string.IsNullOrWhiteSpace(order?.SessionId))
+            {
+                await _cartRepository.ClearBasket(order.SessionId);
+            }
 
             Console.WriteLine($"Payment {payment.Id} updated to Succeeded, Order {payment.OrderId} updated to Confirmed");
         }
