@@ -1,20 +1,22 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Infrastructure.Identity;
 
 namespace API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController : ControllerBase
+public class AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager) : ControllerBase
 {
+    private readonly UserManager<AppUser> _userManager = userManager;
+    private readonly SignInManager<AppUser> _signInManager = signInManager;
+
     [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-        await HttpContext.SignOutAsync(IdentityConstants.BearerScheme);
+        await _signInManager.SignOutAsync();
 
         return Ok(new { Message = "Logged out successfully" });
     }

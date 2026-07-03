@@ -30,7 +30,6 @@ public class CartService : ICartService
 
 		if (basketEntries.Length == 0)
 		{
-			Console.WriteLine("Basket is empty.");
 			return Array.Empty<BasketItem>();
 		}
 				

@@ -45,9 +45,9 @@ export class AuthService {
     this.authStateSubject.next({ email: null, isAuthenticated: false });
   }
 
-    isLoggedIn(): boolean {
+  isLoggedIn(): boolean {
     return this.authStateSubject.value.isAuthenticated;
-    }
+  }
 
   getAccessToken(): string | null {
     return this.getStoredToken();

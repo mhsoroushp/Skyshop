@@ -4,9 +4,11 @@ using API.Extensions;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Core.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class BookController(IBookRepository repo) : ControllerBase
