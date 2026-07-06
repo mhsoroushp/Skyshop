@@ -8,8 +8,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.getAccessToken();
 
   const apiBaseUrl = environment.apiBaseUrl;
+  const requestUrl = new URL(req.url, window.location.origin);
+  const apiUrl = new URL(apiBaseUrl, window.location.origin);
 
-  if (!token || !req.url.startsWith('http://localhost:5057')) {
+  if (!token || requestUrl.origin !== apiUrl.origin || !requestUrl.pathname.startsWith(apiUrl.pathname)) {
     return next(req);
   }
 
