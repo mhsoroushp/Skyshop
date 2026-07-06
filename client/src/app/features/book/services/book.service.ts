@@ -10,7 +10,7 @@ import { BookSearchRequest } from '../models/bookSearchRequest';
 })
 export class BookService {
 
-  private baseUrl = environment.apiBaseUrl + '/book';
+  private baseUrl = environment.apiBaseUrl + 'book';
 
   constructor(private http:HttpClient){}
 

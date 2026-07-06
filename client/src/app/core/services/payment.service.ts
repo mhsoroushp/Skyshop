@@ -7,12 +7,13 @@ import {
   CreatePaymentIntentResponse, 
   ProcessPaymentRequest 
 } from '../models/payment.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PaymentService {
-  private readonly apiUrl = 'http://localhost:5057/api/payments';
+  private readonly apiUrl = `${environment.apiBaseUrl}payments`;
 
   constructor(private http: HttpClient) {}
 

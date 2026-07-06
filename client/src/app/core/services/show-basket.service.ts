@@ -31,7 +31,7 @@ export class ShowBasketService {
         this.getBasket();
      }
 
-    private baseUrl = environment.apiBaseUrl + '/basket';
+    private baseUrl = environment.apiBaseUrl + 'basket';
 
     basketItems = signal<BasketItem[]>([]);
     

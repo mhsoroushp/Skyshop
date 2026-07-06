@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface PaymentStatusUpdate {
   orderId: string;
@@ -18,6 +19,9 @@ export class PaymentStatusRealtimeService {
   private readonly statusUpdatesSubject = new Subject<PaymentStatusUpdate>();
   readonly statusUpdates$ = this.statusUpdatesSubject.asObservable();
 
+  private readonly apiBaseUrl = environment.apiBaseUrl;
+  private readonly hubPaymentStatusUrl = environment.hubPamentStatusUrl;
+
   async connect(): Promise<void> {
     if (this.hubConnection?.state === HubConnectionState.Connected) {
       return;
@@ -25,7 +29,7 @@ export class PaymentStatusRealtimeService {
 
     if (!this.hubConnection) {
       this.hubConnection = new HubConnectionBuilder()
-        .withUrl('http://localhost:5057/hubs/payment-status')
+        .withUrl(this.hubPaymentStatusUrl)
         .withAutomaticReconnect()
         .configureLogging(LogLevel.Information)
         .build();

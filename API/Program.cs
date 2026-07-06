@@ -30,10 +30,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Redis")
         ?? throw new Exception("Cannot get redis connection string");
-    var configuation = new ConfigurationOptions
-    {
-        EndPoints = { connectionString }
-    };
+    var configuation = ConfigurationOptions.Parse(connectionString, true);
     return ConnectionMultiplexer.Connect(configuation);
 });
 
@@ -79,6 +76,16 @@ app.UseAuthentication();
 app.UseMiddleware<AnonymousSessionMiddleware>();
 app.UseAuthorization();
 
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.MapControllers();
+app.MapGroup("api").MapIdentityApi<AppUser>();
+app.MapHub<PaymentStatusHub>("/hubs/payment-status");
+app.MapFallbackToController("Index", "Fallback");
+
+
 // Seed data
 using (var scope = app.Services.CreateScope())
 {
@@ -123,9 +130,5 @@ using (var scope = app.Services.CreateScope())
         context.SaveChanges();
     }
 }
-
-app.MapControllers();
-app.MapIdentityApi<AppUser>();
-app.MapHub<PaymentStatusHub>("/hubs/payment-status");
 
 app.Run();
