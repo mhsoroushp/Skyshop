@@ -2,8 +2,6 @@
   <h2>SkyShop</h2>
 
   <nav>
-    <a routerLink="/shop/home" routerLinkActive="active">Shop</a>
-    <a routerLink="/show-basket-list" routerLinkActive="active">Basket</a>
     @if (isAuthenticated()) {
       <span class="auth-label">{{ authEmail() }}</span>
       <button mat-button type="button" (click)="logout()">Logout</button>
