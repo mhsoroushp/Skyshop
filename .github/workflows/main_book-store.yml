@@ -18,6 +18,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+        
+      - name: Install Angular CLI
+        run: npm install -g @angular/cli@21
+
+      - name: Install dependencies and build Angular app
+        run: |
+          cd client
+          npm install
+          ng build --configuration production
+
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
@@ -54,7 +68,6 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F31BD53266484C01A081766FFE126100 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_6BA5D7A7C2A043E892D33D014BC109F8 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_685CD83BF42640A4B132AC5A3CA09640 }}
-          allow-no-subscriptions: true
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp

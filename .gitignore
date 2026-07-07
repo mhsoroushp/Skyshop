@@ -482,3 +482,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# appsettings development .json
+appsettings.Development.json
+docker-compose.yml
+PAYMENT_SETUP_GUIDE.md
