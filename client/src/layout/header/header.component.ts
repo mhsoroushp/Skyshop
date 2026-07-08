@@ -22,7 +22,7 @@ import { ShowBasketService } from '../../app/core/services/show-basket.service';
 export class HeaderComponent implements OnInit, OnDestroy {
 
   basketCount = signal(0);
-  authEmail = signal<string | null>(null);
+  // authEmail = signal<string | null>(null);
   isAuthenticated = signal(false);
   private readonly destroy$ = new Subject<void>();
   showBasketService = inject(ShowBasketService);
@@ -33,7 +33,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.authService.authState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
-        this.authEmail.set(state.email);
+        this.authService.authEmail.set(state.email);
         this.isAuthenticated.set(state.isAuthenticated);
       });
   }

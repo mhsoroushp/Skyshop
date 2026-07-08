@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, catchError, mapTo, of, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, finalize, map, mapTo, of, shareReplay, tap } from 'rxjs';
 import { AuthState, AuthTokenResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
@@ -9,12 +9,14 @@ import { environment } from '../../../environments/environment';
 })
 export class AuthService {
   private readonly apiBaseUrl = environment.apiBaseUrl;
-  private readonly accessTokenStorageKey = 'skyshop.accessToken';
-  private readonly refreshTokenStorageKey = 'skyshop.refreshToken';
-  private readonly emailStorageKey = 'skyshop.email';
+  private accessToken: string | null = null;
+  private refreshRequest$: Observable<AuthTokenResponse> | null = null;
+
+  authEmail = signal<string | null>(null);
+  
   private readonly authStateSubject = new BehaviorSubject<AuthState>({
-    email: this.getStoredEmail(),
-    isAuthenticated: !!this.getStoredToken()
+    email: this.authEmail(),
+    isAuthenticated: false
   });
 
   readonly authState$ = this.authStateSubject.asObservable();
@@ -22,17 +24,38 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(request: LoginRequest): Observable<AuthTokenResponse> {
-    return this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}login`, request).pipe(
+    return this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}login`, request, { withCredentials: true }).pipe(
       tap((response) => this.storeAuth(response, request.email))
     );
   }
 
   register(request: RegisterRequest): Observable<void> {
-    return this.http.post<void>(`${this.apiBaseUrl}register`, request);
+    return this.http.post<void>(`${this.apiBaseUrl}register`, request, { withCredentials: true });
+  }
+
+  refresh(): Observable<AuthTokenResponse> {
+    if (!this.refreshRequest$) {
+      this.refreshRequest$ = this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}refresh`, {}, { withCredentials: true }).pipe(
+        tap((response) => this.storeAuth(response)),
+        finalize(() => {
+          this.refreshRequest$ = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+
+    return this.refreshRequest$;
+  }
+
+  restoreSession(): Observable<void> {
+    return this.refresh().pipe(
+      map(() => void 0),
+      catchError(() => of(void 0))
+    );
   }
 
   logout(): Observable<void> {
-    return this.http.post(`${this.apiBaseUrl}auth/logout`, {}).pipe(
+    return this.http.post(`${this.apiBaseUrl}logout`, {}, { withCredentials: true }).pipe(
       mapTo(void 0),
       catchError(() => of(void 0)),
       tap(() => this.clearAuth())
@@ -40,9 +63,8 @@ export class AuthService {
   }
 
   clearAuth(): void {
-    localStorage.removeItem(this.accessTokenStorageKey);
-    localStorage.removeItem(this.refreshTokenStorageKey);
-    localStorage.removeItem(this.emailStorageKey);
+    this.authEmail.set(null);
+    this.accessToken = null;
     this.authStateSubject.next({ email: null, isAuthenticated: false });
   }
 
@@ -51,25 +73,20 @@ export class AuthService {
   }
 
   getAccessToken(): string | null {
-    return this.getStoredToken();
+    return this.accessToken;
   }
 
-  getCurrentUserEmail(): string | null {
-    return this.authStateSubject.value.email;
-  }
+  private storeAuth(response: AuthTokenResponse, email?: string): void {
+    this.accessToken = response.accessToken;
+    const resolvedEmail = email ?? response.email ?? this.authEmail();
 
-  private storeAuth(response: AuthTokenResponse, email: string): void {
-    localStorage.setItem(this.accessTokenStorageKey, response.accessToken);
-    localStorage.setItem(this.refreshTokenStorageKey, response.refreshToken);
-    localStorage.setItem(this.emailStorageKey, email);
-    this.authStateSubject.next({ email, isAuthenticated: true });
-  }
+    if (resolvedEmail) {
+      this.authEmail.set(resolvedEmail);
+    }
 
-  private getStoredToken(): string | null {
-    return localStorage.getItem(this.accessTokenStorageKey);
-  }
-
-  private getStoredEmail(): string | null {
-    return localStorage.getItem(this.emailStorageKey);
+    this.authStateSubject.next({
+      email: resolvedEmail,
+      isAuthenticated: true
+    });
   }
 }

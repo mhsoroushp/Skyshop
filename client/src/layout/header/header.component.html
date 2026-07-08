@@ -3,7 +3,7 @@
 
   <nav>
     @if (isAuthenticated()) {
-      <span class="auth-label">{{ authEmail() }}</span>
+      <span class="auth-label">{{ authService.authEmail() }}</span>
       <button mat-button type="button" (click)="logout()">Logout</button>
     } @else {
       <a routerLink="/auth" routerLinkActive="active">Login</a>
