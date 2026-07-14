@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
-[Authorize]
+[AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
 public class BookController(IBookRepository repo) : ControllerBase

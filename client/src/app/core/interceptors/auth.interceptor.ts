@@ -31,13 +31,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(addBearerToken(credentialedRequest, accessToken));
   }
 
-  // we don't have a token, try to refresh it
+  // we don't have a token, try to refresh it, if it is already logged in
 
   return authService.refresh().pipe(
     switchMap((response) => {
-      const newAccessToken = response.accessToken;
-      return next(addBearerToken(credentialedRequest, newAccessToken)
-      );
+      if(response){
+        const newAccessToken = response.accessToken;
+        return next(addBearerToken(credentialedRequest, newAccessToken));
+      }
+      return next(credentialedRequest);
     })
   );
 };
