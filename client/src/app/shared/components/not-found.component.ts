@@ -12,7 +12,7 @@ import { RouterLink } from '@angular/router';
     MatButton
   ],
   templateUrl: './not-found.component.html',
-  styleUrl: './not-found.component.scss'
+  styleUrl: './not-found.component.css'
 })
 export class NotFoundComponent {
 
