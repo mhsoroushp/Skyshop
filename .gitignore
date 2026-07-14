@@ -487,3 +487,4 @@ $RECYCLE.BIN/
 appsettings.Development.json
 docker-compose.yml
 PAYMENT_SETUP_GUIDE.md
+API/appsettings.Development.json

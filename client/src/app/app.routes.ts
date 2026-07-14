@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { UsersPage } from './features/users/pages/users-page/users-page';
 import { AUTH_ROUTES } from './features/auth/auth.routes';
 import { DASHBOARD_ROUTES } from './features/dashboard/dashboard.routes';
-import { DashboardPage } from './features/dashboard/pages/dashboard-page/dashboard-page';
+import { DashboardPage } from './features/dashboard/pages/dashboard/dashboard.component';
 import { BookListComponent } from './features/book/components/book-list/book-list.component';
 import { authGuard } from './core/guards/auth.guard';
 import { LoginPage } from './features/auth/pages/login-page/login-page';
@@ -21,12 +21,6 @@ export const routes: Routes = [
   {path: 'checkout', component: CheckoutComponent},
   {path: 'payment/:orderId', component: PaymentComponent},
   {path: 'order-confirmation/:orderId', component: OrderConfirmationComponent},
-
-  {path: 'books', 
-    loadComponent: () => import('./features/book/components/book-list/book-list.component')
-      .then(c => c.BookListComponent),
-      canActivate: [authGuard]
-  },
 
   {path: 'shop/home', 
     component: ShopHomeComponent
