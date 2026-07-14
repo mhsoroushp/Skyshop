@@ -17,9 +17,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const apiUrl = new URL(apiBaseUrl, window.location.origin);
   const isApiRequest = requestUrl.origin === apiUrl.origin && requestUrl.pathname.startsWith(apiUrl.pathname);
   const isAuthRequest = AUTH_PATHS.some((path) => requestUrl.pathname === `${apiUrl.pathname.replace(/\/$/, '')}${path}`);
+  const credentialedRequest = isApiRequest ? req.clone({ withCredentials: true }) : req;
 
   if (!isApiRequest || isAuthRequest) {
-    return next(req);
+    return next(credentialedRequest);
   }
 
   const accessToken = authService.getAccessToken();
@@ -27,7 +28,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // we already have a token
   if (accessToken) {
-    return next(addBearerToken(req, accessToken));
+    return next(addBearerToken(credentialedRequest, accessToken));
   }
 
   // we don't have a token, try to refresh it
@@ -35,7 +36,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return authService.refresh().pipe(
     switchMap((response) => {
       const newAccessToken = response.accessToken;
-      return next(addBearerToken(req, newAccessToken)
+      return next(addBearerToken(credentialedRequest, newAccessToken)
       );
     })
   );
@@ -45,7 +46,6 @@ function addBearerToken(req: HttpRequest<unknown>, token: string) {
   return req.clone({
     setHeaders: {
       Authorization: `Bearer ${token}`
-    },
-    withCredentials: true
+    }
   });
 }

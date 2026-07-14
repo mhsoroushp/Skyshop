@@ -35,10 +35,13 @@ export class AuthService {
 
   refresh(): Observable<AuthTokenResponse> {
     if (!this.refreshRequest$) {
-      this.refreshRequest$ = this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}refresh`,{}, ).pipe(
-        tap({
-          next: (response) => this.storeAuth(response),
-        }),
+      this.refreshRequest$ = this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}refresh`,{}).pipe(
+        tap((response => {
+          if(response) {
+            this.storeAuth(response);
+          }
+        }))
+        ,
         shareReplay({ bufferSize: 1, refCount: true }),
         finalize(() => {
           this.refreshRequest$ = null;
