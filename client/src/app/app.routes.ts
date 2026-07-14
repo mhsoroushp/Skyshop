@@ -14,6 +14,7 @@ import { PaymentComponent } from './features/payment/payment.component';
 import { OrderConfirmationComponent } from './features/order-confirmation/order-confirmation.component';
 
 export const routes: Routes = [
+  {path : '', redirectTo: 'dashboard', pathMatch: 'full'},
   {path: 'users', component: UsersPage},
 
   {path: 'show-basket-list', component: ShowBasketListComponent},
@@ -42,5 +43,5 @@ export const routes: Routes = [
   {path: 'auth', children: AUTH_ROUTES},
   {path: 'not-found', loadComponent: () => import('./shared/components/not-found.component')
     .then(c => c.NotFoundComponent)},
-  {path: '**', redirectTo: 'not-found'}
+  {path: '**', redirectTo: 'not-found' }
 ];
