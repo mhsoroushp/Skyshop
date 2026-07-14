@@ -40,4 +40,7 @@ export const routes: Routes = [
       canDeactivate: [canDeactivateGuard]
   },
   {path: 'auth', children: AUTH_ROUTES},
+  {path: 'not-found', loadComponent: () => import('./shared/components/not-found.component')
+    .then(c => c.NotFoundComponent)},
+  {path: '**', redirectTo: 'not-found'}
 ];

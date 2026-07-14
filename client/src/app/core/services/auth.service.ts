@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, catchError, finalize, map, mapTo, of, shareReplay, tap } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, catchError, finalize, map, mapTo, of, shareReplay, tap, throwError } from 'rxjs';
 import { AuthState, AuthTokenResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
@@ -24,23 +24,25 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(request: LoginRequest): Observable<AuthTokenResponse> {
-    return this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}login`, request, { withCredentials: true }).pipe(
+    return this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}login`, request).pipe(
       tap((response) => this.storeAuth(response, request.email))
     );
   }
 
   register(request: RegisterRequest): Observable<void> {
-    return this.http.post<void>(`${this.apiBaseUrl}register`, request, { withCredentials: true });
+    return this.http.post<void>(`${this.apiBaseUrl}register`, request);
   }
 
   refresh(): Observable<AuthTokenResponse> {
     if (!this.refreshRequest$) {
-      this.refreshRequest$ = this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}refresh`, {}, { withCredentials: true }).pipe(
-        tap((response) => this.storeAuth(response)),
+      this.refreshRequest$ = this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}refresh`,{}, ).pipe(
+        tap({
+          next: (response) => this.storeAuth(response),
+        }),
+        shareReplay({ bufferSize: 1, refCount: true }),
         finalize(() => {
           this.refreshRequest$ = null;
-        }),
-        shareReplay({ bufferSize: 1, refCount: false })
+        })
       );
     }
 
@@ -49,14 +51,13 @@ export class AuthService {
 
   restoreSession(): Observable<void> {
     return this.refresh().pipe(
-      map(() => void 0),
-      catchError(() => of(void 0))
+      map(() => void 0)
     );
   }
 
   logout(): Observable<void> {
-    return this.http.post(`${this.apiBaseUrl}logout`, {}, { withCredentials: true }).pipe(
-      mapTo(void 0),
+    return this.http.post(`${this.apiBaseUrl}logout`, {}).pipe(
+      map(() => void 0),
       catchError(() => of(void 0)),
       tap(() => this.clearAuth())
     );

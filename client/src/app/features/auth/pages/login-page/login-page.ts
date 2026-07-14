@@ -192,9 +192,9 @@ export class LoginPage {
           this.authForm.controls.password.reset('');
           this.cdr.detectChanges();
         },
-        error: (err: { error?: { title?: string; message?: string; detail?: string } }) => {
+        error: (err: { error?: { error?: string } }) => {
           this.loading = false;
-          this.error = err?.error?.title || err?.error?.message || err?.error?.detail || 'Authentication failed';
+          this.error = err?.error?.error || 'Authentication failed';
           this.cdr.detectChanges();
         }
       });
@@ -210,7 +210,7 @@ export class LoginPage {
       },
       error: (err: { error?: { title?: string; message?: string; detail?: string } }) => {
         this.loading = false;
-        this.error = err?.error?.title || err?.error?.message || err?.error?.detail || 'Authentication failed';
+        this.error = err?.error?.message || 'Authentication failed';
         this.cdr.detectChanges();
       }
     });
