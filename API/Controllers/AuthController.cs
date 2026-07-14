@@ -32,6 +32,13 @@ public class AuthController(
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
+
+        var existingUser = await _userManager.FindByEmailAsync(request.Email);
+        if (existingUser is not null)
+        {
+            return BadRequest(new { error = "User with this email already exists" });
+        }
+
         var user = new AppUser
         {
             UserName = request.Email,
@@ -40,16 +47,12 @@ public class AuthController(
 
         var result = await _userManager.CreateAsync(user, request.Password);
 
-        if (!result.Succeeded)
+        if(!result.Succeeded)
         {
-            var validationErrors = result.Errors
-                .GroupBy(error => error.Code)
-                .ToDictionary(group => group.Key, group => group.Select(error => error.Description).ToArray());
-
-            return ValidationProblem(new ValidationProblemDetails(validationErrors));
+            return BadRequest("Error in creating the user");
         }
 
-        return Ok();
+        return Ok(new { message ="Successfully registered"});
     }
 
     [AllowAnonymous]
@@ -60,14 +63,14 @@ public class AuthController(
 
         if (user is null)
         {
-            return Problem(title: "Failed", statusCode: StatusCodes.Status401Unauthorized);
+            return NotFound("User not found");
         }
 
         var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
 
         if (!result.Succeeded)
         {
-            return Problem(title: result.IsLockedOut ? "LockedOut" : result.RequiresTwoFactor ? "RequiresTwoFactor" : "Failed", statusCode: StatusCodes.Status401Unauthorized);
+            return BadRequest("specified password is incorrect");
         }
 
         var response = await IssueTokensAsync(user);
@@ -91,7 +94,7 @@ public class AuthController(
         if (string.IsNullOrWhiteSpace(refreshToken))
         {
             DeleteRefreshTokenCookie();
-            return Unauthorized();
+            return NoContent();
         }
 
         var refreshTokenProtector = _bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
@@ -100,7 +103,7 @@ public class AuthController(
         if (refreshTicket?.Properties?.ExpiresUtc is not { } expiresUtc || _timeProvider.GetUtcNow() >= expiresUtc)
         {
             DeleteRefreshTokenCookie();
-            return Unauthorized();
+            return NoContent();
         }
 
         var user = await _signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) as AppUser;
@@ -108,7 +111,7 @@ public class AuthController(
         if (user is null)
         {
             DeleteRefreshTokenCookie();
-            return Unauthorized();
+            return StatusCode(StatusCodes.Status401Unauthorized, "Invalid refresh token");
         }
 
         var response = await IssueTokensAsync(user);
@@ -123,12 +126,13 @@ public class AuthController(
         });
     }
 
+
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
         DeleteRefreshTokenCookie();
 
-        return Ok(new { Message = "Logged out successfully" });
+        return Ok("Logged out successfully");
     }
 
     private async Task<FrameworkBearerTokenResponse> IssueTokensAsync(AppUser user)
