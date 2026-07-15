@@ -11,21 +11,15 @@ export class AuthService {
   private readonly apiBaseUrl = environment.apiBaseUrl;
   private accessToken: string | null = null;
   private refreshRequest$: Observable<AuthTokenResponse> | null = null;
+  private authSignal = signal<AuthState | null>(null);
 
-  authEmail = signal<string | null>(null);
-  
-  private readonly authStateSubject = new BehaviorSubject<AuthState>({
-    email: this.authEmail(),
-    isAuthenticated: false
-  });
-
-  readonly authState$ = this.authStateSubject.asObservable();
+  public authState = this.authSignal.asReadonly();
 
   constructor(private http: HttpClient) {}
 
   login(request: LoginRequest): Observable<AuthTokenResponse> {
     return this.http.post<AuthTokenResponse>(`${this.apiBaseUrl}login`, request).pipe(
-      tap((response) => this.storeAuth(response, request.email))
+      tap((response) => this.storeAuth(response))
     );
   }
 
@@ -67,30 +61,33 @@ export class AuthService {
   }
 
   clearAuth(): void {
-    this.authEmail.set(null);
-    this.accessToken = null;
-    this.authStateSubject.next({ email: null, isAuthenticated: false });
+    // correct place
+    this.authSignal.set({
+      email: null,
+      isAuthenticated: false,
+      roles: [],
+      accessToken: null
+    })
   }
 
   isLoggedIn(): boolean {
-    return this.authStateSubject.value.isAuthenticated;
+    return this.authState()?.isAuthenticated ?? false;
   }
 
   getAccessToken(): string | null {
-    return this.accessToken;
+    return this.authState()?.accessToken ?? null;
   }
 
-  private storeAuth(response: AuthTokenResponse, email?: string): void {
-    this.accessToken = response.accessToken;
-    const resolvedEmail = email ?? response.email ?? this.authEmail();
+  private storeAuth(response: AuthTokenResponse): void {
+    if(!response) return;
 
-    if (resolvedEmail) {
-      this.authEmail.set(resolvedEmail);
-    }
+    // correct place
+    this.authSignal.set({
+      email: response.email,
+      isAuthenticated: true, 
+      roles: response.roles,
+      accessToken: response.accessToken
+    })
 
-    this.authStateSubject.next({
-      email: resolvedEmail,
-      isAuthenticated: true
-    });
   }
 }

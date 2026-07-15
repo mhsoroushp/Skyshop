@@ -1,46 +1,19 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject} from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../app/core/services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [RouterLink],
-  template: `
-    <aside class="sidebar">
-      <h3>Menu</h3>
-      <nav>
-        <a routerLink="/dashboard">Dashboard</a>
-        <a routerLink="/users">Users</a>
-        <a routerLink="/create-book">Create Book</a>
-      </nav>
-    </aside>
-  `,
-  styles: [`
-    .sidebar {
-      width: 240px;
-      background: #405175;
-      padding: 16px;
-      border-right: 1px solid #e5e7eb;
-      min-height: 100vh;
-    }
-
-    nav {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    a {
-      color: #111827;
-      text-decoration: none;
-      padding: 8px 10px;
-      border-radius: 6px;
-    }
-
-    a:hover {
-      background: #e5e7eb;
-    }
-  `]
+  templateUrl: './sidebar.component.html',
+  styleUrl: './sidebar.component.css'
 })
-export class SidebarComponent {}
+export class SidebarComponent{
+  authService = inject(AuthService);
+
+  isUserHasAdminRole(): boolean {
+    const authState = this.authService.authState();
+    return authState?.roles?.includes('Admin') ?? false;
+  } 
+}

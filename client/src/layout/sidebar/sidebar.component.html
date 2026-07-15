@@ -1,0 +1,10 @@
+<aside class="sidebar">
+  <h3>Menu</h3>
+  <nav>
+    <a routerLink="/dashboard">Dashboard</a>
+    @if(isUserHasAdminRole()) {
+      <a routerLink="/users">Users</a>
+      <a routerLink="/create-book">Create Book</a>
+    }
+  </nav>
+</aside>

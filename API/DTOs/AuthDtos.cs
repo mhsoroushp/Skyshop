@@ -18,4 +18,5 @@ public sealed class AuthTokenResponse
     public string AccessToken { get; set; } = string.Empty;
     public long ExpiresIn { get; set; }
     public string? Email { get; set; }
+    public List<string> Roles { get; set; } = new();
 }

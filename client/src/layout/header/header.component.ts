@@ -3,7 +3,6 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatBadge } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
-import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../app/core/services/auth.service';
 import { ShowBasketService } from '../../app/core/services/show-basket.service';
 
@@ -19,29 +18,16 @@ import { ShowBasketService } from '../../app/core/services/show-basket.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit {
 
   basketCount = signal(0);
-  // authEmail = signal<string | null>(null);
-  isAuthenticated = signal(false);
-  private readonly destroy$ = new Subject<void>();
+
   showBasketService = inject(ShowBasketService);
   authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  ngOnInit(): void {
-    this.authService.authState$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((state) => {
-        this.authService.authEmail.set(state.email);
-        this.isAuthenticated.set(state.isAuthenticated);
-      });
-  }
+  ngOnInit(): void {}
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 
   logout(): void {
     this.authService.logout().subscribe(() => {

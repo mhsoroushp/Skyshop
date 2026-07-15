@@ -52,6 +52,13 @@ public class AuthController(
             return BadRequest("Error in creating the user");
         }
 
+        var roleResult = await _userManager.AddToRoleAsync(user, "User");
+
+        if (!roleResult.Succeeded)
+        {
+            return BadRequest("Error in assigning role to the user");
+        }
+
         return Ok(new { message ="Successfully registered"});
     }
 
@@ -73,6 +80,8 @@ public class AuthController(
             return BadRequest("specified password is incorrect");
         }
 
+        var roles = await _userManager.GetRolesAsync(user);
+
         var response = await IssueTokensAsync(user);
         SetRefreshTokenCookie(response.RefreshToken);
 
@@ -81,7 +90,8 @@ public class AuthController(
             TokenType = response.TokenType,
             AccessToken = response.AccessToken,
             ExpiresIn = response.ExpiresIn,
-            Email = user.Email
+            Email = user.Email,
+            Roles = roles.ToList()
         });
     }
 
@@ -114,6 +124,8 @@ public class AuthController(
             return StatusCode(StatusCodes.Status401Unauthorized, "Invalid refresh token");
         }
 
+        var roles = await _userManager.GetRolesAsync(user);
+
         var response = await IssueTokensAsync(user);
         SetRefreshTokenCookie(response.RefreshToken);
 
@@ -122,7 +134,8 @@ public class AuthController(
             TokenType = response.TokenType,
             AccessToken = response.AccessToken,
             ExpiresIn = response.ExpiresIn,
-            Email = user.Email
+            Email = user.Email,
+            Roles = roles.ToList()
         });
     }
 

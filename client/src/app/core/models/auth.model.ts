@@ -13,9 +13,12 @@ export interface AuthTokenResponse {
   accessToken: string;
   expiresIn: number;
   email?: string;
+  roles?: string[];
 }
 
 export interface AuthState {
-  email: string | null;
+  email?: string | null;
   isAuthenticated: boolean;
+  roles?: string[];
+  accessToken?: string | null;
 }

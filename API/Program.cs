@@ -25,6 +25,7 @@ builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddAuthorization();
 builder.Services
     .AddIdentityApiEndpoints<AppUser>()
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<BookContext>();
 builder.Services.AddSingleton<IConnectionMultiplexer>(config =>
 {
@@ -93,6 +94,49 @@ using (var scope = app.Services.CreateScope())
     // Apply all pending migrations automatically on startup.
     context.Database.Migrate();
 
+    // Create roles if they don't exist
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var roles = new[] { "Admin", "User" };
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // Create default admin user if it doesn't exist
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    var anyAdmin = await userManager.GetUsersInRoleAsync("Admin");
+
+    var bootstrapEmail = builder.Configuration["BootstrapAdmin:Email"];
+    var bootstrapPassword = builder.Configuration["BootstrapAdmin:Password"];
+
+    if (anyAdmin.Count == 0 &&
+        !string.IsNullOrWhiteSpace(bootstrapEmail) &&
+        !string.IsNullOrWhiteSpace(bootstrapPassword))
+    {
+        var adminUser = await userManager.FindByEmailAsync(bootstrapEmail);
+        if (adminUser == null)
+        {
+            adminUser = new AppUser
+            {
+                UserName = bootstrapEmail,
+                Email = bootstrapEmail
+            };
+
+            var createResult = await userManager.CreateAsync(adminUser, bootstrapPassword);
+
+            if (!createResult.Succeeded)
+                throw new Exception("Bootstrap admin creation failed: " +
+                    string.Join(", ", createResult.Errors.Select(e => e.Description)));
+        }
+
+        if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+
+    // Seed books if the database is empty
     if (!context.Books.Any())
     {
         // Seed once when database is empty.
