@@ -2,9 +2,12 @@ import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatBadge } from '@angular/material/badge';
+import {MatToolbarModule} from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../app/core/services/auth.service';
 import { ShowBasketService } from '../../app/core/services/show-basket.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-header',
@@ -14,7 +17,11 @@ import { ShowBasketService } from '../../app/core/services/show-basket.service';
     MatBadge,
     MatButtonModule,
     RouterLink,
-    RouterLinkActive],
+    RouterLinkActive,
+    MatToolbarModule, 
+    MatFormFieldModule,
+    MatInputModule
+  ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })

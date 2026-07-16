@@ -1,4 +1,4 @@
-.header {
+/* .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -18,19 +18,20 @@ nav {
   font-size: 14px;
 }
 
-a {
+*/
+
+/* a {
   color: white;
   text-decoration: none;
-}
+} */
 
-button {
+/* button {
   color: white !important;
-}
+} */
 
 .cart-link {
   display: inline-flex;
   align-items: center;
-  color: white;
 }
 
 .custom-badge .mat-badge-content {
@@ -46,8 +47,87 @@ button {
   height: 32px;
 }
 
+.cart-link:hover {
+  cursor: pointer;
+}
+
 a {
   &.active {
     color: #7d00fa;
   }
+} 
+
+mat-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.left, .center, .right {
+  display: flex;
+  align-items: center;
+}
+
+.left {
+  flex: 0 0 auto;
+}
+
+.center {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.center .search-field {
+  width: min(100%, 32rem);
+  margin-top: 6px;
+  --mdc-outlined-text-field-container-shape: 999px;
+  --mdc-outlined-text-field-container-color: rgba(255, 255, 255, 0.94);
+  --mdc-outlined-text-field-input-text-color: #14213d;
+  --mdc-outlined-text-field-focus-outline-color: #f59e0b;
+  --mdc-outlined-text-field-hover-outline-color: rgba(20, 33, 61, 0.45);
+  --mdc-outlined-text-field-outline-color: rgba(20, 33, 61, 0.2);
+  --mat-form-field-focus-select-arrow-color: #14213d;
+}
+
+:host ::ng-deep .center .search-field .mat-mdc-text-field-wrapper {
+  min-height: 38px;
+}
+
+:host ::ng-deep .center .search-field .mat-mdc-form-field-flex {
+  min-height: 38px;
+  align-items: center;
+}
+
+:host ::ng-deep .center .search-field .mat-mdc-form-field-infix {
+  min-height: 38px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+:host ::ng-deep .center .search-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.center .search-field :is(input, .mat-mdc-input-element) {
+  color: #14213d;
+}
+
+.center .search-field ::placeholder {
+  color: rgba(20, 33, 61, 0.62);
+}
+
+.center .search-field .search-btn,
+.center .search-field mat-icon {
+  color: #14213d;
+}
+
+.right {
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+
+.search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

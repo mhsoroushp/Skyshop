@@ -1,23 +1,43 @@
 <header class="header">
-  <h2>SkyShop</h2>
+  <mat-toolbar>
+    <div class="left">
+      <h2>SkyShop</h2>
+    </div>
 
-  <nav>
-    @if (authService.authState()?.isAuthenticated) {
-      <span class="auth-label">{{ authService.authState()?.email }}</span>
-      <button mat-button type="button" (click)="logout()">Logout</button>
-    } @else {
-      <a routerLink="/auth" routerLinkActive="active">Login</a>
-    }
-  </nav>
+    <div class="center">
+      <mat-form-field
+        appearance="outline"
+        class="search-field w-full max-w-md">
+        <input matInput type="search" placeholder="Search..." />
 
-  <a
-    class="cart-link custom-badge mt-2 mr-2"
-    routerLink="/show-basket-list"
-    routerLinkActive="active"
-    aria-label="Open basket"
-    [matBadge]="showBasketService.basketItemCount()"
-    matBadgeSize="large"
-  >
-    <mat-icon>shopping_cart</mat-icon>
-  </a>
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          aria-label="Search"
+          class="search-btn">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+    <div class="right">
+      <a
+        class="cart-link custom-badge mt-2 mr-2"
+        routerLink="/show-basket-list"
+        routerLinkActive="active"
+        aria-label="Open basket"
+        [matBadge]="showBasketService.basketItemCount()"
+        matBadgeSize="large">
+        <mat-icon>shopping_cart</mat-icon>
+      </a>
+
+      @if (authService.authState()?.isAuthenticated) {
+        <span class="auth-label">{{ authService.authState()?.email }}</span>
+        <button matButton="outlined" type="button" (click)="logout()">Logout</button>
+      } @else {
+        <button matButton="outlined"><a routerLink="/auth" routerLinkActive="active">Login</a></button>
+      }
+    </div>
+  </mat-toolbar>
+
 </header>
