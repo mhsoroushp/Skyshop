@@ -40,7 +40,6 @@
                   <mat-icon>delete</mat-icon>
                   Delete
                 </button>
-                
                 <!-- Quantity Input -->
                 <div class="quantity-wrapper">
                   <label class="quantity-label">Quantity:</label>
@@ -68,39 +67,39 @@
       <!-- Total Price -->
       <div class="basket-total">
         <span class="total-label">Total:</span>
-        <span class="total-price">{{ totalPrice() | currency:'CHF':'symbol':'1.2-2' }}</span>
+        <span class="total-price">{{ showBasketService.totolPrice() | currency:'CHF':'symbol':'1.2-2' }}</span>
       </div>
     }
   </div>
   
   <!-- Right Side: Checkout Button -->
   <div class="basket-right">
-    <div class="checkout-card">
-      <h3 class="checkout-title">Ready to Checkout?</h3>
-      <p class="checkout-description">
+    <div class="checkout-card bg-slate-100">
+      <h3 class="checkout-title text-slate-900">Ready to Checkout?</h3>
+      <p class="checkout-description text-slate-900">
         {{ showBasketService.basketItems().length }} item(s) in your basket
       </p>
-      <button 
-        class="btn-checkout" 
-        mat-flat-button 
-        color="primary"
-        routerLink="/checkout"
-        [disabled]="showBasketService.basketItems().length === 0"
-      >
-        <mat-icon>cart_checkout</mat-icon>
-        Checkout
-      </button>
+      <div class="inline-flex flex-col gap-4">
+        <button 
+          class="btn-checkout bg-black text-white" 
+          mat-flat-button 
+          routerLink="/checkout"
+          [disabled]="showBasketService.basketItems().length === 0">
+          <mat-icon>shopping_basket</mat-icon>
+          Checkout
+        </button>
 
-      <button
-        class="btn-delete"
-        mat-button
-        color="warn"
-        type="button"
-        (click)="clearBasket()"
-      >
-        <mat-icon>delete_sweep</mat-icon>
-        Clear Basket
-      </button>
+        <button
+          class="btn-delete"
+          mat-button
+          color="warn"
+          type="button"
+          (click)="clearBasket()">
+          <mat-icon>delete_sweep</mat-icon>
+          Clear Basket
+        </button>
+      </div>
+
     </div>
   </div>
 </div>

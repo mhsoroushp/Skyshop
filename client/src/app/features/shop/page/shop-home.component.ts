@@ -1,12 +1,12 @@
 import { Component, inject } from "@angular/core";
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Book } from "../../book/models/book.model";
 import { ShowBasketService } from "../../../core/services/show-basket.service";
 
 @Component({
     selector: 'app-shop-home', 
     standalone: true,
-    imports: [], 
+    imports: [RouterLink], 
     templateUrl: './shop-home.component.html',
 })
 export class ShopHomeComponent{
@@ -35,5 +35,4 @@ export class ShopHomeComponent{
             console.warn('No book selected to add to basket');
         }
     }
-
 }

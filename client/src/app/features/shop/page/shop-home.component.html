@@ -2,9 +2,7 @@
   <div class="mx-auto max-w-6xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
     <div class="mb-8 flex flex-col gap-2 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex flex-wrap gap-2">
-        <span>Home</span>
-        <span class="text-slate-400">/</span>
-        <span>Books</span>
+        <a routerLink="/dashboard" class="text-slate-600 hover:text-slate-900">Books</a>
         <span class="text-slate-400">/</span>
         <span class="font-semibold text-slate-900">Book Detail</span>
       </div>
@@ -76,9 +74,6 @@
           <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <button (click)="addToBasket()" class="flex-1 cursor-pointer rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
               In den Warenkorb
-            </button>
-            <button class="rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50">
-              Wunschliste
             </button>
           </div>
         </div>
