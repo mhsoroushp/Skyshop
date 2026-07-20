@@ -11,7 +11,7 @@
 /* Left Side: Product List */
 .basket-left {
   flex: 1;
-  max-width: 75%;
+  max-width: 100%;
 }
 
 .basket-title {
@@ -82,12 +82,13 @@
 
 /* Product Image */
 .product-image-wrapper {
-  flex: 0 0 60px;
-  width: 60px;
-  height: 60px;
+  flex: 0 0 80px;
+  width: 80px;
+  height: 80px;
   border-radius: 8px;
   overflow: hidden;
   background: #f9fafb;
+  align-items: center;
 }
 
 .product-image {
@@ -106,8 +107,9 @@
 
 .product-info {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 4px;
+  justify-content: space-between;
 }
 
 .product-title {
@@ -128,16 +130,17 @@
 .product-actions {
   display: flex;
   align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
 /* Delete Button */
 .btn-delete {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 16px;
+  /* gap: 4px; */
+  /* padding: 8px 16px; */
   font-size: 14px;
   font-weight: 500;
   border-radius: 8px;
@@ -155,8 +158,8 @@
 
 .btn-delete mat-icon {
   font-size: 18px;
-  width: 18px;
-  height: 18px;
+  /* width: 18px;
+  height: 18px; */
 }
 
 /* Quantity Input */

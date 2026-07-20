@@ -1,0 +1,43 @@
+<div class="checkout-container">
+  <div class="left">
+    <p>Basket</p>
+    <app-show-basket-list></app-show-basket-list>
+  </div>
+  <div class="right">
+    <mat-accordion class="checkout-accordion" multi="false">
+      <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>Delivery Address</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="tab-content" 
+             [ngClass]="{'disabled': tabProccessed.IsdeliveryAddressCompleted}">
+          <app-delivery-address 
+            (currentOrder)="onCurrentOrderChanged($event)"
+            (IsOrderCreated)="onDeliveryChanged($event)">
+          </app-delivery-address>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Payment</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="tab-content">
+          <app-payment-methods [orderFromCheckout]="order"></app-payment-methods>
+        </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Confirmation</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="tab-content">
+          <app-payment-summary [orderFromCheckout]="order"></app-payment-summary>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+</div>
