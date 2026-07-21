@@ -6,8 +6,9 @@
   <div class="right">
     <mat-accordion class="checkout-accordion" multi="false">
       <mat-expansion-panel [expanded]="true">
-        <mat-expansion-panel-header>
-          <mat-panel-title>Delivery Address</mat-panel-title>
+        <mat-expansion-panel-header
+          [ngClass]="{ 'completed-header': tabProccessed.IsdeliveryAddressCompleted }">
+          <mat-panel-title>1 Delivery Address</mat-panel-title>
         </mat-expansion-panel-header>
 
         <div class="tab-content" 
@@ -21,7 +22,7 @@
 
       <mat-expansion-panel>
         <mat-expansion-panel-header>
-          <mat-panel-title>Payment</mat-panel-title>
+          <mat-panel-title>2 Payment</mat-panel-title>
         </mat-expansion-panel-header>
 
         <div class="tab-content">
@@ -29,7 +30,7 @@
         </div>
       </mat-expansion-panel>
 
-      <mat-expansion-panel>
+      <!-- <mat-expansion-panel>
         <mat-expansion-panel-header>
           <mat-panel-title>Confirmation</mat-panel-title>
         </mat-expansion-panel-header>
@@ -37,7 +38,7 @@
         <div class="tab-content">
           <app-payment-summary [orderFromCheckout]="order"></app-payment-summary>
         </div>
-      </mat-expansion-panel>
+      </mat-expansion-panel> -->
     </mat-accordion>
   </div>
 </div>

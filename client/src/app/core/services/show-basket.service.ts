@@ -94,7 +94,7 @@ export class ShowBasketService {
         return this.http.delete<any>(`${this.baseUrl}/clear`).pipe(
             map((response) => {
                 // After clearing basket, refresh the basket items
-                this.getBasket();
+                this._basketItems.set([]);
                 return response;
             })
         );

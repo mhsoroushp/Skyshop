@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnChanges, OnInit, OnDestroy, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, OnInit, OnDestroy, SimpleChanges, EventEmitter, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,6 +19,7 @@ import {
 import { PaymentService } from '../../../core/services/payment.service';
 import { Order } from '../../../core/models/order.model';
 import { environment } from '../../../../environments/environment';
+import { ShowBasketService } from '../../../core/services/show-basket.service';
 
 @Component({
   selector: 'app-payment-methods',
@@ -37,6 +38,9 @@ import { environment } from '../../../../environments/environment';
   styleUrls: ['./payment-methods.component.css']
 })
 export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+
+  showBasketService = inject(ShowBasketService);
+
   @Input() orderFromCheckout?: Order;
 
   paymentForm!: FormGroup;
@@ -330,9 +334,8 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
           this.processing = false;
           this.updateFormDisabledState(false);
           this.setStripeElementsDisabled(false);
-          setTimeout(() => {
-            this.router.navigate(['/order-confirmation', this.orderId]);
-          }, 2000);
+          this.clearBasketAfterPayment();
+          this.router.navigate(['/order-confirmation', this.orderId]);
         },
         error: (err) => {
           this.error = 'Payment failed: ' + (err.error?.message || err.message);
@@ -341,6 +344,17 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
           this.setStripeElementsDisabled(false);
         }
       });
+  }
+
+  private clearBasketAfterPayment(): void {
+    this.showBasketService.clearBasket().subscribe({
+      next: () => {
+        console.log('Basket cleared after successful payment.');
+      },
+      error: (err) => {
+        console.error('Failed to clear basket after payment:', err);
+      }
+    });
   }
 
   get cardholderName() {
