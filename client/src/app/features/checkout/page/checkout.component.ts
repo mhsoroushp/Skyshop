@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { DeliveryAddressComponent } from '../delivery-address/delivery-address.component';
-import { Order } from '../../../core/models/order.model';
 import { ShowBasketListComponent } from '../../basket/components/show/show-basket-list.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { PaymentMethodsComponent } from '../payment-method/payment-methods.component';
+import { PaymentConfirmationComponent } from '../confirmation/payment-confirmation.component';
 
 interface TabProccessed {
-  IsdeliveryAddressCompleted: boolean;
-  IsPaymentMethodCompleted: boolean;
+  IsAddressTabExpand: boolean;
+  IsPaymentTabExpand: boolean;
+  IsConfirmationTabExpand: boolean;
 }
 
 @Component({
@@ -20,28 +21,28 @@ interface TabProccessed {
     MatExpansionModule,
     DeliveryAddressComponent,
     PaymentMethodsComponent,
+    PaymentConfirmationComponent
   ],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.css']
 })
-export class CheckoutComponent implements OnInit {
-  order?: Order;
+export class CheckoutComponent {
   tabProccessed: TabProccessed = {
-    IsdeliveryAddressCompleted: false,
-    IsPaymentMethodCompleted: false,
+    IsAddressTabExpand: true,
+    IsPaymentTabExpand: false,
+    IsConfirmationTabExpand: false,
   };
-  
 
-  ngOnInit(): void {
+
+  onOrderSuccessCreation(isCompleted: boolean) {
+    this.tabProccessed.IsAddressTabExpand = false;
+    this.tabProccessed.IsPaymentTabExpand = true; // True
+    this.tabProccessed.IsConfirmationTabExpand = false;
   }
 
-  onCurrentOrderChanged(order: Order) {
-    this.order = order;
-    console.log('Order received from child:', order);
-    // use it: call API, update form, navigate, etc.
-  }
-
-  onDeliveryChanged(isCompleted: boolean) {
-    this.tabProccessed.IsdeliveryAddressCompleted = isCompleted;
+  onPaymentSuccess(isCompleted: boolean) {
+    this.tabProccessed.IsAddressTabExpand = false;
+    this.tabProccessed.IsPaymentTabExpand = false;
+    this.tabProccessed.IsConfirmationTabExpand = true;
   }
 }

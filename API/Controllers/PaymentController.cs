@@ -2,12 +2,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces;
 using API.DTOs;
+using Core.Models;
 using API.Hubs;
 using Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using Stripe;
+
 
 namespace API.Controllers;
 
@@ -67,14 +69,7 @@ public class PaymentController : ControllerBase
         if (payment == null)
             return NotFound(new { Message = "Payment not found for this order" });
 
-        var order = await _orderService.GetOrderByIdAsync(orderId);
-        if (order == null)
-            return NotFound(new { Message = "Order not found" });
-
-        if (!CanAccessOrder(order))
-            return Forbid();
-
-        return Ok(MapToDto(payment));
+        return Ok(MapToSuccessDto(payment));
     }
 
     // POST: api/payments/create-intent
@@ -154,12 +149,22 @@ public class PaymentController : ControllerBase
                 return NotFound(new { Message = "Payment confirmation failed" });
 
             // Update order status if payment succeeded
-            if (confirmedPayment.Status == Core.Models.PaymentStatus.Succeeded)
+            if (confirmedPayment.Status == PaymentStatus.Succeeded)
             {
                 await _orderService.UpdateOrderStatusAsync(
                     request.OrderId,
-                    Core.Models.OrderStatus.Confirmed);
+                    OrderStatus.Confirmed);
             }
+
+            var orderStatus = confirmedPayment.Status == PaymentStatus.Succeeded
+                ? OrderStatus.Confirmed.ToString()
+                : OrderStatus.Pending.ToString();
+
+            await PublishPaymentStatusUpdate(
+                request.OrderId,
+                confirmedPayment.Status.ToString(),
+                orderStatus,
+                "Payment status updated");
 
             return Ok(new
             {
@@ -268,7 +273,7 @@ public class PaymentController : ControllerBase
         }
     }
 
-    private async Task HandlePaymentIntentSucceeded(Stripe.Event stripeEvent)
+    private async Task HandlePaymentIntentSucceeded(Event stripeEvent)
     {
         try
         {
@@ -288,20 +293,22 @@ public class PaymentController : ControllerBase
 
             // Idempotency: do not rewrite status if already succeeded.
             // Basket clear remains safe to retry.
-            if (payment.Status != Core.Models.PaymentStatus.Succeeded)
+            if (payment.Status != PaymentStatus.Succeeded)
             {
                 await _paymentService.UpdatePaymentStatusAsync(
                     payment.Id,
-                    Core.Models.PaymentStatus.Succeeded,
+                    PaymentStatus.Succeeded,
                     paymentIntent.Id);
             }
 
             // Update order status to Confirmed
             await _orderService.UpdateOrderStatusAsync(
                 payment.OrderId,
-                Core.Models.OrderStatus.Confirmed);
+                OrderStatus.Confirmed);
 
             // Clear basket only after webhook-confirmed success.
+
+            // TODO: this must be done from the frontend
             var order = await _orderService.GetOrderByIdAsync(payment.OrderId);
             if (!string.IsNullOrWhiteSpace(order?.SessionId))
             {
@@ -310,8 +317,8 @@ public class PaymentController : ControllerBase
 
             await PublishPaymentStatusUpdate(
                 payment.OrderId,
-                Core.Models.PaymentStatus.Succeeded.ToString(),
-                Core.Models.OrderStatus.Confirmed.ToString(),
+                PaymentStatus.Succeeded.ToString(),
+                OrderStatus.Confirmed.ToString(),
                 "Payment succeeded");
 
             Console.WriteLine($"Payment {payment.Id} updated to Succeeded, Order {payment.OrderId} updated to Confirmed");
@@ -460,7 +467,7 @@ public class PaymentController : ControllerBase
         }
     }
 
-    private static PaymentDto MapToDto(Core.Models.Payment payment)
+    private static PaymentDto MapToDto(Payment payment)
     {
         return new PaymentDto
         {
@@ -471,6 +478,22 @@ public class PaymentController : ControllerBase
             PaymentMethod = payment.PaymentMethod.ToString(),
             TransactionId = payment.TransactionId,
             StripePaymentIntentId = payment.StripePaymentIntentId,
+            CreatedAt = payment.CreatedAt,
+            ProcessedAt = payment.ProcessedAt
+        };
+    }
+
+    private static PaymentSuccessDto MapToSuccessDto(Payment payment)
+    {
+        return new PaymentSuccessDto
+        {
+            Id = payment.Id,
+            OrderId = payment.OrderId,
+            Amount = payment.Amount,
+            Status = payment.Status.ToString(),
+            Quantity = payment.Order?.Items.Sum(i => i.Quantity) ?? 0,
+            CustomerName = payment.Order?.CustomerName ?? string.Empty,
+            CustomerEmail = payment.Order?.CustomerEmail ?? string.Empty,
             CreatedAt = payment.CreatedAt,
             ProcessedAt = payment.ProcessedAt
         };
@@ -490,7 +513,7 @@ public class PaymentController : ControllerBase
             });
     }
 
-    private bool CanAccessOrder(Core.Models.Order order)
+    private bool CanAccessOrder(Order order)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!string.IsNullOrWhiteSpace(userId))

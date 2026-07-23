@@ -4,6 +4,7 @@ using Core.Interfaces;
 using API.DTOs;
 using Core.Models;
 using System.Security.Claims;
+using API.Extensions;
 
 namespace API.Controllers;
 
@@ -22,7 +23,7 @@ public class OrderController : ControllerBase
 
     // GET: api/orders/{id}
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetOrder(Guid id)
+    public async Task<IActionResult> GetOrderById(Guid id)
     {
         var order = await _orderService.GetOrderByIdAsync(id);
         if (order == null)
@@ -31,7 +32,7 @@ public class OrderController : ControllerBase
         if (!CanAccessOrder(order))
             return Forbid();
 
-        return Ok(MapToDto(order));
+        return Ok(OrderMappingExtensions.ToOrderDto(order));
     }
 
     // POST: api/orders
@@ -59,11 +60,7 @@ public class OrderController : ControllerBase
                 request.CustomerEmail,
                 request.CustomerName);
 
-            return Ok(new
-            {
-                Message = "Order created successfully",
-                Order = MapToDto(order)
-            });
+            return Ok(OrderMappingExtensions.ToOrderDto(order));
         }
         catch (Exception ex)
         {
@@ -82,7 +79,7 @@ public class OrderController : ControllerBase
         if (!CanAccessOrder(order))
             return Forbid();
 
-        return Ok(MapToDto(order));
+        return Ok(OrderMappingExtensions.ToOrderDto(order));
     }
 
     private bool CanAccessOrder(Order order)
@@ -96,28 +93,5 @@ public class OrderController : ControllerBase
             return string.Equals(order.SessionId, currentBasketKey, StringComparison.Ordinal);
 
         return false;
-    }
-
-    // TODO: move this the extension method
-    private static OrderDto MapToDto(Order order)
-    {
-        return new OrderDto
-        {
-            Id = order.Id,
-            SessionId = order.SessionId,
-            CreatedAt = order.CreatedAt,
-            TotalAmount = order.TotalAmount,
-            Status = order.Status.ToString(),
-            CustomerEmail = order.CustomerEmail,
-            CustomerName = order.CustomerName,
-            Items = order.Items.Select(i => new OrderItemDto
-            {
-                Id = i.Id,
-                ProductId = i.ProductId,
-                Quantity = i.Quantity,
-                Price = i.Price,
-                ProductName = i.ProductName
-            }).ToList()
-        };
     }
 }

@@ -7,7 +7,6 @@ import { authGuard } from './core/guards/auth.guard';
 import { canDeactivateGuard } from './core/guards/can-deactivate.guard';
 import { ShopHomeComponent } from './features/shop/page/shop-home.component';
 import { ShowBasketListComponent } from './features/basket/components/show/show-basket-list.component';
-import { OrderConfirmationComponent } from './features/order-confirmation/order-confirmation.component';
 
 export const routes: Routes = [
   {path : '', redirectTo: 'dashboard', pathMatch: 'full'},
@@ -18,13 +17,9 @@ export const routes: Routes = [
     loadComponent: () => import('./features/checkout/page/checkout.component')
       .then(c => c.CheckoutComponent)
   },
-  {path: 'order-confirmation/:orderId', component: OrderConfirmationComponent},
 
-  {path: 'shop/home', 
-    component: ShopHomeComponent
-  },
+  {path: 'shop/home', component: ShopHomeComponent},
   
-
   // {path:'dashboard', children: DASHBOARD_ROUTES},
   {path: 'dashboard', component: DashboardPage},
   {path: 'create-book', 

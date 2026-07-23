@@ -5,112 +5,106 @@
 			<h1>Payment</h1>
 		</div>
 
+		@if (error) {
+			<div class="error-message">
+				<mat-icon>error_outline</mat-icon>
+				<div>
+					<strong>Payment Error</strong>
+					<p>{{ error }}</p>
+				</div>
+			</div>
+		}
+
 		@if (success) {
 			<div class="success-message">
 				<mat-icon class="success-icon">check_circle</mat-icon>
-				<h2>Payment Successful!</h2>
 				<p>Your payment has been processed successfully.</p>
-				<p class="redirect-info">Redirecting to confirmation...</p>
 			</div>
-		} @else {
-			@if (order) {
+		}@else{
+			@if (orderService.currentOrder$()) {
 				<div class="order-summary">
 					<h2>Order Summary</h2>
 					<div class="summary-grid">
 						<div class="summary-item">
 							<span class="label">Order ID</span>
-							<span class="value">{{ order.id | slice:0:8 }}...</span>
+							<span class="value">{{ orderService.currentOrder$()?.id | slice:0:8 }}...</span>
 						</div>
 						<div class="summary-item">
 							<span class="label">Total Amount</span>
-							<span class="value amount">${{ order.totalAmount | number:'1.2-2' }}</span>
+							<span class="value amount">${{ orderService.currentOrder$()?.totalAmount | number:'1.2-2' }}</span>
 						</div>
 						<div class="summary-item">
 							<span class="label">Items</span>
-							<span class="value">{{ order.items.length }}</span>
+							<span class="value">{{ orderService.currentOrder$()?.items?.reduce((acc, item) => acc + item.quantity, 0) }}</span>
 						</div>
 					</div>
 				</div>
 			}
-
-			@if (error) {
-				<div class="error-message">
-					<mat-icon>error_outline</mat-icon>
-					<div>
-						<strong>Payment Error</strong>
-						<p>{{ error }}</p>
-					</div>
-				</div>
-			}
-
-			<form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="payment-form">
-				<mat-form-field appearance="outline" class="form-field">
-					<mat-label>Cardholder Name</mat-label>
-					<input
-						matInput
-						formControlName="cardholderName"
-						placeholder="John Doe"
-						type="text"
-					/>
-					@if (cardholderName?.hasError('required') && cardholderName?.touched) {
-						<mat-error>Cardholder name is required</mat-error>
-					}
-				</mat-form-field>
-
-				<div class="card-section">
-					<label class="card-label">Card Number</label>
-					<div id="card-number-element" class="stripe-card-element"></div>
-				</div>
-
-				<div class="card-inline-row">
-					<div class="card-section inline-item">
-						<label class="card-label">Expiration</label>
-						<div id="card-expiry-element" class="stripe-card-element"></div>
-					</div>
-					<div class="card-section inline-item">
-						<label class="card-label">CVV</label>
-						<div id="card-cvc-element" class="stripe-card-element"></div>
-					</div>
-				</div>
-
-				<button
-					mat-raised-button
-					color="primary"
-					type="submit"
-					class="submit-button"
-					[disabled]="!canSubmit"
-				>
-					@if (processing) {
-						<mat-spinner diameter="18" class="spinner"></mat-spinner>
-						<span>Processing Payment...</span>
-					} @else if (paymentInitializing) {
-						<span>Preparing Payment...</span>
-					} @else if (!clientSecret) {
-						<span>Loading Payment...</span>
-					} @else {
-						<span>Pay ${{ order?.totalAmount | number:'1.2-2' }}</span>
-					}
-				</button>
-
-				<div class="test-info-box">
-					<p class="test-title">Test Mode - Card Numbers:</p>
-					<div class="card-list">
-						<div class="card-item">
-							<span class="card-number">4242 4242 4242 4242</span>
-							<span class="card-status success">Success</span>
-						</div>
-						<div class="card-item">
-							<span class="card-number">4000 0025 0000 3155</span>
-							<span class="card-status auth">Requires Auth</span>
-						</div>
-						<div class="card-item">
-							<span class="card-number">4000 0000 0000 0002</span>
-							<span class="card-status declined">Declined</span>
-						</div>
-					</div>
-					<p class="card-details">Expiry: Any future date | CVC: Any 3 digits | No ZIP required</p>
-				</div>
-			</form>
 		}
+
+		<form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="payment-form">
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>Cardholder Name</mat-label>
+				<input
+					matInput
+					formControlName="cardholderName"
+					placeholder="John Doe"
+					type="text"
+				/>
+				@if (cardholderName?.hasError('required') && cardholderName?.touched) {
+					<mat-error>Cardholder name is required</mat-error>
+				}
+			</mat-form-field>
+
+			<div class="card-section">
+				<label class="card-label">Card Number</label>
+				<div id="card-number-element" class="stripe-card-element"></div>
+			</div>
+
+			<div class="card-inline-row">
+				<div class="card-section inline-item">
+					<label class="card-label">Expiration</label>
+					<div id="card-expiry-element" class="stripe-card-element"></div>
+				</div>
+				<div class="card-section inline-item">
+					<label class="card-label">CVV</label>
+					<div id="card-cvc-element" class="stripe-card-element"></div>
+				</div>
+			</div>
+
+			<button
+				mat-raised-button
+				color="primary"
+				type="submit"
+				class="submit-button"
+				[disabled]="!canSubmit"
+			>
+				@if (loading) {
+					<mat-spinner diameter="18" class="spinner"></mat-spinner>
+					<span>Processing Payment...</span>
+				} @else {
+					<span>Pay ${{ orderService.currentOrder$()?.totalAmount | number:'1.2-2' }}</span>
+				}
+			</button>
+
+			<div class="test-info-box">
+				<p class="test-title">Test Mode - Card Numbers:</p>
+				<div class="card-list">
+					<div class="card-item">
+						<span class="card-number">4242 4242 4242 4242</span>
+						<span class="card-status success">Success</span>
+					</div>
+					<div class="card-item">
+						<span class="card-number">4000 0025 0000 3155</span>
+						<span class="card-status auth">Requires Auth</span>
+					</div>
+					<div class="card-item">
+						<span class="card-number">4000 0000 0000 0002</span>
+						<span class="card-status declined">Declined</span>
+					</div>
+				</div>
+				<p class="card-details">Expiry: Any future date | CVC: Any 3 digits | No ZIP required</p>
+			</div>
+		</form>
 	</div>
 </div>

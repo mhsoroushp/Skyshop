@@ -1,5 +1,6 @@
-import { AfterViewInit, Component, Input, OnChanges, OnInit, OnDestroy, SimpleChanges, EventEmitter, Output, inject } from '@angular/core';
+import { AfterViewInit, Component, OnInit, OnDestroy, inject, effect, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subject } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -17,9 +18,11 @@ import {
   loadStripe
 } from '@stripe/stripe-js';
 import { PaymentService } from '../../../core/services/payment.service';
-import { Order } from '../../../core/models/order.model';
 import { environment } from '../../../../environments/environment';
 import { ShowBasketService } from '../../../core/services/show-basket.service';
+import { PaymentStatusRealtimeService } from '../../../core/services/payment-status-realtime.service';
+import { takeUntil } from 'rxjs';
+import { OrderService } from '../../../core/services/order.service';
 
 @Component({
   selector: 'app-payment-methods',
@@ -37,19 +40,25 @@ import { ShowBasketService } from '../../../core/services/show-basket.service';
   templateUrl: './payment-methods.component.html',
   styleUrls: ['./payment-methods.component.css']
 })
-export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
-
+export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy {
+  @Output() IsPaymentCompleted = new EventEmitter<boolean>(false);
   showBasketService = inject(ShowBasketService);
+  orderService = inject(OrderService);
+  private readonly watchOrderForRealtimeJoin = effect(() => {
+    const currentOrder = this.orderService.currentOrder$();
+    const orderId = currentOrder?.id;
 
-  @Input() orderFromCheckout?: Order;
+    if (orderId && orderId !== this.joinedOrderId) {
+      void this.joinCurrentOrderGroup();
+    }
+  });
 
   paymentForm!: FormGroup;
-  paymentInitializing = false;
-  processing = false;
+  private joinedOrderId = '';
+  private readonly destroy$ = new Subject<void>();
+  loading = false;
   error = '';
   success = false;
-  orderId = '';
-  order?: Order;
   stripe: Stripe | null = null;
   elements: StripeElements | null = null;
   cardNumberElement: StripeCardNumberElement | null = null;
@@ -60,26 +69,34 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
   private cardCvcMounted = false;
   private mountRetryTimer: ReturnType<typeof setInterval> | null = null;
   private mountRetryCount = 0;
-  clientSecret = '';
 
   get canSubmit(): boolean {
-    return !!this.clientSecret && !this.processing && !this.paymentInitializing;
+    return !this.loading && !this.success && this.paymentForm.valid;
   }
 
   constructor(
     private router: Router,
     private formBuilder: FormBuilder,
-    private paymentService: PaymentService
+    private paymentService: PaymentService,
+    private paymentStatusRealtimeService: PaymentStatusRealtimeService
   ) {
     this.initializeForm();
   }
 
   ngOnInit(): void {
     void this.initializeStripe();
+  
+    this.paymentStatusRealtimeService.statusUpdates$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(async (order) => {
+        if(order.paymentStatus === 'Succeeded') {
+          this.orderService.setOrderIdWithSuccessfulPayment(order.orderId);
+          this.IsPaymentCompleted.emit(true);
+          if(!this.success) await this.afterSuccessfulPayment();
+        }
+      });
 
-    if (this.orderFromCheckout?.id) {
-      this.applyOrderFromParent(this.orderFromCheckout);
-    }
+    void this.joinCurrentOrderGroup();
   }
 
   ngAfterViewInit(): void {
@@ -95,28 +112,23 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
     this.cardNumberElement?.destroy();
     this.cardExpiryElement?.destroy();
     this.cardCvcElement?.destroy();
+
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    if (this.joinedOrderId) {
+      void this.paymentStatusRealtimeService.leaveOrderGroup(this.joinedOrderId);
+    }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const orderChange = changes['orderFromCheckout'];
-    if (orderChange?.currentValue?.id) {
-      this.applyOrderFromParent(orderChange.currentValue);
-    }
+  public isCurrentOrderAvailable(): boolean {
+    return this.orderService.currentOrder$() !== null;
   }
 
   private initializeForm(): void {
     this.paymentForm = this.formBuilder.group({
       cardholderName: [{ value: '', disabled: false }, [Validators.required]]
     });
-  }
-
-  private applyOrderFromParent(order: Order): void {
-    this.order = order;
-    this.orderId = order.id;
-
-    if (!this.clientSecret) {
-      this.createPaymentIntent();
-    }
   }
 
   private async initializeStripe(): Promise<void> {
@@ -195,38 +207,13 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
       this.cardCvcMounted = true;
     }
 
-    this.setStripeElementsDisabled(this.paymentInitializing || this.processing);
+    this.setStripeElementsDisabled(false);
   }
 
   private setStripeElementsDisabled(disabled: boolean): void {
     this.cardNumberElement?.update({ disabled });
     this.cardExpiryElement?.update({ disabled });
     this.cardCvcElement?.update({ disabled });
-  }
-
-  private createPaymentIntent(): void {
-    if (!this.orderId) {
-      return;
-    }
-
-    this.paymentInitializing = true;
-    this.updateFormDisabledState(true);
-    this.setStripeElementsDisabled(true);
-
-    this.paymentService.createPaymentIntent({ orderId: this.orderId }).subscribe({
-      next: (response) => {
-        this.clientSecret = response.clientSecret;
-        this.paymentInitializing = false;
-        this.updateFormDisabledState(false);
-        this.setStripeElementsDisabled(false);
-      },
-      error: (err) => {
-        this.error = 'Failed to initialize payment: ' + (err.error?.message || err.message);
-        this.paymentInitializing = false;
-        this.updateFormDisabledState(false);
-        this.setStripeElementsDisabled(false);
-      }
-    });
   }
 
   private updateFormDisabledState(disabled: boolean): void {
@@ -240,19 +227,24 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
     });
   }
 
-  onSubmit(): void {
+  private createPaymentIntent(orderId: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.paymentService.createPaymentIntent({ orderId }).subscribe({
+        next: (response) => {
+          console.log('Hadi this is the response inside createPaymentIntent: ', response);
+          resolve(response.clientSecret);
+        },
+        error: (err) => {
+          this.error = 'Failed to initialize payment: ' + (err.error?.message || err.message);
+          reject(err);
+        }
+      });
+    });
+  }
+
+  async onSubmit(): Promise<void> {
     if (this.paymentForm.invalid) {
       this.error = 'Please fill in all required fields';
-      return;
-    }
-
-    if (!this.orderId) {
-      this.error = 'Create an order first before processing payment.';
-      return;
-    }
-
-    if (!this.clientSecret) {
-      this.error = 'Payment is not initialized yet. Please try again.';
       return;
     }
 
@@ -261,7 +253,23 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
       return;
     }
 
-    this.processing = true;
+    if (!this.isCurrentOrderAvailable()) {
+      this.error = 'Create an order first before processing payment.';
+      return;
+    }
+
+    var order = this.orderService.currentOrder$()!;
+    console.log('Hadi this is the order: ', order);
+    var clientSecret = await this.createPaymentIntent(order.id);
+
+    console.log('Hadi this is the clientSecret: ', clientSecret);
+
+    if (!clientSecret) {
+      this.error = 'Payment is not initialized yet. Please try again.';
+      return;
+    }
+
+    this.loading = true;
     this.error = '';
     this.updateFormDisabledState(true);
     this.setStripeElementsDisabled(true);
@@ -269,7 +277,7 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
     const { cardholderName } = this.paymentForm.value;
 
     this.stripe
-      .confirmCardPayment(this.clientSecret, {
+      .confirmCardPayment(clientSecret, {
         payment_method: {
           card: this.cardNumberElement,
           billing_details: {
@@ -278,83 +286,112 @@ export class PaymentMethodsComponent implements OnInit, OnChanges, AfterViewInit
         }
       })
       .then((result: any) => {
+        // Handle the successful payment confirmation
+        if (!result.error && result.paymentIntent 
+          && (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing')) {
+          this.confirmPayment(result.paymentIntent.id);
+          return;
+        }
+
+        // Handle the failed payment confirmation
+        this.loading = false;
+        this.updateFormDisabledState(false);
+        this.setStripeElementsDisabled(false);
+
         if (result.error) {
           this.error = result.error.message || 'Payment confirmation failed';
-          this.processing = false;
-          this.updateFormDisabledState(false);
-          this.setStripeElementsDisabled(false);
           return;
         }
 
-        const paymentIntent = result.paymentIntent;
+        const paymentIntent = result?.paymentIntent;
         if (!paymentIntent) {
           this.error = 'Stripe did not return a payment result.';
-          this.processing = false;
-          this.updateFormDisabledState(false);
-          this.setStripeElementsDisabled(false);
-          return;
-        }
-
-        if (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing') {
-          this.confirmPayment(paymentIntent.id);
           return;
         }
 
         if (paymentIntent.status === 'requires_payment_method') {
           this.error = 'Payment method was rejected. Please verify card details or use another test card.';
-          this.processing = false;
-          this.updateFormDisabledState(false);
-          this.setStripeElementsDisabled(false);
           return;
         }
 
         this.error = `Unexpected payment status: ${paymentIntent.status}`;
-        this.processing = false;
-        this.updateFormDisabledState(false);
-        this.setStripeElementsDisabled(false);
       })
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : 'Unexpected payment error';
         this.error = `Payment failed: ${message}`;
-        this.processing = false;
+        this.loading = false;
         this.updateFormDisabledState(false);
         this.setStripeElementsDisabled(false);
       });
   }
 
   private confirmPayment(paymentIntentId: string): void {
-    this.paymentService
-      .confirmPayment({
-        orderId: this.orderId,
-        paymentMethodId: paymentIntentId
+    void this.joinCurrentOrderGroup()
+      .catch((err) => {
+        console.error('[PaymentConfirmation] Failed to ensure SignalR group join before confirm:', err);
       })
-      .subscribe({
-        next: () => {
-          this.success = true;
-          this.processing = false;
-          this.updateFormDisabledState(false);
-          this.setStripeElementsDisabled(false);
-          this.clearBasketAfterPayment();
-          this.router.navigate(['/order-confirmation', this.orderId]);
-        },
-        error: (err) => {
-          this.error = 'Payment failed: ' + (err.error?.message || err.message);
-          this.processing = false;
-          this.updateFormDisabledState(false);
-          this.setStripeElementsDisabled(false);
-        }
+      .finally(() => {
+        this.paymentService
+          .confirmPayment({
+            orderId: this.orderService.currentOrder$()!.id,
+            paymentMethodId: paymentIntentId
+          })
+          .subscribe({
+            next: async () => {
+              if(!this.success) await this.afterSuccessfulPayment();
+            },
+            error: (err) => {
+              this.error = 'Payment failed: ' + (err.error?.message || err.message);
+              this.loading = false;
+              this.updateFormDisabledState(false);
+              this.setStripeElementsDisabled(false);
+            }
+          });
       });
   }
 
-  private clearBasketAfterPayment(): void {
-    this.showBasketService.clearBasket().subscribe({
-      next: () => {
-        console.log('Basket cleared after successful payment.');
-      },
-      error: (err) => {
-        console.error('Failed to clear basket after payment:', err);
-      }
+  private async afterSuccessfulPayment(): Promise<void> {
+    this.success = true;
+    this.loading = false;
+    this.updateFormDisabledState(false);
+    this.setStripeElementsDisabled(false);
+    await this.clearBasketAfterPayment();
+    this.orderService.clearCurrentOrderAfterPaymentSuccess();
+  }
+
+  private clearBasketAfterPayment(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.showBasketService.clearBasket().subscribe({
+        next: () => {
+          console.log('Basket cleared after successful payment.');
+          resolve();
+        },
+        error: (err) => {
+          console.error('Failed to clear basket after payment:', err);
+          reject(err);
+        }
+      });
     });
+  }
+
+  private async joinCurrentOrderGroup(): Promise<void> {
+    const currentOrder = this.orderService.currentOrder$();
+    const orderId = currentOrder?.id;
+    if (!orderId || orderId === this.joinedOrderId) {
+      if (!orderId) {
+        console.log('[PaymentConfirmation] Skipping SignalR join: orderId is empty.');
+      }
+      return;
+    }
+
+    try {
+      await this.paymentStatusRealtimeService.joinOrderGroup(orderId);
+      console.log('[PaymentConfirmation] Joined SignalR group for order:', orderId);
+      this.joinedOrderId = orderId;
+    } catch (err) {
+      console.error('[PaymentConfirmation] Failed to join SignalR group for order:', orderId, err);
+      throw err;
+    }
   }
 
   get cardholderName() {

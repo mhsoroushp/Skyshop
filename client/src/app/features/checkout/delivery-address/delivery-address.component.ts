@@ -4,10 +4,11 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { Order } from '../../../core/models/order.model';
 import { OrderService } from '../../../core/services/order.service';
 import { Router } from '@angular/router';
 import { CreateOrderRequest } from '../../../core/models/order.model';
+import { MatIconModule } from '@angular/material/icon';
+import { ShowBasketService } from '../../../core/services/show-basket.service';
 
 @Component({
   selector: 'app-delivery-address',
@@ -18,23 +19,24 @@ import { CreateOrderRequest } from '../../../core/models/order.model';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './delivery-address.component.html',
   styleUrls: ['./delivery-address.component.css']
 })
 export class DeliveryAddressComponent implements OnInit {
-  @Output() currentOrder = new EventEmitter<Order>();
   @Output() IsOrderCreated = new EventEmitter<boolean>(false);
-
   deliveryForm!: FormGroup;
+  success = false;
   loading = false;
   error = '';
-  //currentOrder?: Order;
+
 
   constructor(
     private fb: FormBuilder,
     private orderService: OrderService,
-    private router: Router
+    private showBasketService: ShowBasketService,
+
   ){
     this.initializeForm();
   }
@@ -59,6 +61,11 @@ export class DeliveryAddressComponent implements OnInit {
     return this.deliveryForm.controls;
   }
 
+  canSubmit(): boolean {
+    return this.deliveryForm.valid && !this.loading && !this.success && this.showBasketService.basketItemCount() > 0;
+  }
+
+
   onCreateOrder(): void {
     if (this.deliveryForm.invalid) {
       this.deliveryForm.markAllAsTouched();
@@ -74,22 +81,17 @@ export class DeliveryAddressComponent implements OnInit {
     };
 
     this.orderService.createOrder(request).subscribe({
-      next: (response) => {
-        //this.currentOrder = response.order;
+      next: (order) => {
         this.loading = false;
-        // Navigate to payment
-        //this.router.navigate(['/payment', this.currentOrder?.id]);
-        this.currentOrder.emit(response?.Order ?? response?.order);
+        this.success = true;
         this.IsOrderCreated.emit(true);
       },
       error: (err) => {
         this.loading = false;
+        this.success = false;
         this.error = err.error?.message || 'Failed to create order';
         this.IsOrderCreated.emit(false);
       }
     });
-
-    
-
   }
 }

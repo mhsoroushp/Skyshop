@@ -5,40 +5,39 @@
   </div>
   <div class="right">
     <mat-accordion class="checkout-accordion" multi="false">
-      <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel [expanded]="tabProccessed.IsAddressTabExpand">
         <mat-expansion-panel-header
-          [ngClass]="{ 'completed-header': tabProccessed.IsdeliveryAddressCompleted }">
+          [ngClass]="{ 'completed-header': !tabProccessed.IsAddressTabExpand }">
           <mat-panel-title>1 Delivery Address</mat-panel-title>
         </mat-expansion-panel-header>
 
         <div class="tab-content" 
-             [ngClass]="{'disabled': tabProccessed.IsdeliveryAddressCompleted}">
+             [ngClass]="{'disabled': !tabProccessed.IsAddressTabExpand}">
           <app-delivery-address 
-            (currentOrder)="onCurrentOrderChanged($event)"
-            (IsOrderCreated)="onDeliveryChanged($event)">
+            (IsOrderCreated)="onOrderSuccessCreation($event)">
           </app-delivery-address>
         </div>
       </mat-expansion-panel>
 
-      <mat-expansion-panel>
+      <mat-expansion-panel [expanded]="tabProccessed.IsPaymentTabExpand">
         <mat-expansion-panel-header>
           <mat-panel-title>2 Payment</mat-panel-title>
         </mat-expansion-panel-header>
 
         <div class="tab-content">
-          <app-payment-methods [orderFromCheckout]="order"></app-payment-methods>
+          <app-payment-methods (IsPaymentCompleted)="onPaymentSuccess($event)"></app-payment-methods>
         </div>
       </mat-expansion-panel>
 
-      <!-- <mat-expansion-panel>
+      <mat-expansion-panel [expanded]="tabProccessed.IsConfirmationTabExpand">
         <mat-expansion-panel-header>
-          <mat-panel-title>Confirmation</mat-panel-title>
+          <mat-panel-title>3 Confirmation</mat-panel-title>
         </mat-expansion-panel-header>
 
         <div class="tab-content">
-          <app-payment-summary [orderFromCheckout]="order"></app-payment-summary>
+          <app-payment-confirmation></app-payment-confirmation>
         </div>
-      </mat-expansion-panel> -->
+      </mat-expansion-panel>
     </mat-accordion>
   </div>
 </div>
