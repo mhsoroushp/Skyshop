@@ -23,8 +23,6 @@ export class BookCardComponent {
     }
 
     selectBook(): void {
-        console.log("this is the book");
-        console.log(this.book);
         this.router.navigate(['/shop/home'], {
             queryParams: this.book
         });

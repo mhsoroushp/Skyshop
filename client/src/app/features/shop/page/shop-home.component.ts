@@ -25,7 +25,6 @@ export class ShopHomeComponent{
         if(this.selectedBook){
             this.showBasketService.addToBasket(this.selectedBook.id, 1).subscribe({
                 next: () => {
-                    console.log('Product added to basket successfully');
                 },
                 error: (err) => {
                     console.error('Error adding product to basket:', err);

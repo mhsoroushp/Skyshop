@@ -67,6 +67,7 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
   private cardNumberMounted = false;
   private cardExpiryMounted = false;
   private cardCvcMounted = false;
+  private stripeElementsDisabled = false;
   private mountRetryTimer: ReturnType<typeof setInterval> | null = null;
   private mountRetryCount = 0;
 
@@ -95,8 +96,6 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
           if(!this.success) await this.afterSuccessfulPayment();
         }
       });
-
-    void this.joinCurrentOrderGroup();
   }
 
   ngAfterViewInit(): void {
@@ -206,14 +205,31 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
       this.cardCvcElement.mount('#card-cvc-element');
       this.cardCvcMounted = true;
     }
-
-    this.setStripeElementsDisabled(false);
   }
 
   private setStripeElementsDisabled(disabled: boolean): void {
+    if (this.stripeElementsDisabled === disabled) {
+      return;
+    }
+
+    if (disabled) {
+      this.blurStripeElements();
+    }
+
     this.cardNumberElement?.update({ disabled });
     this.cardExpiryElement?.update({ disabled });
     this.cardCvcElement?.update({ disabled });
+    this.stripeElementsDisabled = disabled;
+  }
+
+  private blurStripeElements(): void {
+    // Prevent accessibility warnings caused by disabling a focused Stripe input.
+    this.cardNumberElement?.blur();
+    this.cardExpiryElement?.blur();
+    this.cardCvcElement?.blur();
+
+    const activeElement = document.activeElement as HTMLElement | null;
+    activeElement?.blur();
   }
 
   private updateFormDisabledState(disabled: boolean): void {
@@ -231,7 +247,6 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
     return new Promise((resolve, reject) => {
       this.paymentService.createPaymentIntent({ orderId }).subscribe({
         next: (response) => {
-          console.log('Hadi this is the response inside createPaymentIntent: ', response);
           resolve(response.clientSecret);
         },
         error: (err) => {
@@ -259,10 +274,7 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     var order = this.orderService.currentOrder$()!;
-    console.log('Hadi this is the order: ', order);
     var clientSecret = await this.createPaymentIntent(order.id);
-
-    console.log('Hadi this is the clientSecret: ', clientSecret);
 
     if (!clientSecret) {
       this.error = 'Payment is not initialized yet. Please try again.';
@@ -328,6 +340,7 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
   private confirmPayment(paymentIntentId: string): void {
     void this.joinCurrentOrderGroup()
       .catch((err) => {
+        // TODO: log the error
         console.error('[PaymentConfirmation] Failed to ensure SignalR group join before confirm:', err);
       })
       .finally(() => {
@@ -363,7 +376,6 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
     return new Promise((resolve, reject) => {
       this.showBasketService.clearBasket().subscribe({
         next: () => {
-          console.log('Basket cleared after successful payment.');
           resolve();
         },
         error: (err) => {
@@ -378,17 +390,14 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
     const currentOrder = this.orderService.currentOrder$();
     const orderId = currentOrder?.id;
     if (!orderId || orderId === this.joinedOrderId) {
-      if (!orderId) {
-        console.log('[PaymentConfirmation] Skipping SignalR join: orderId is empty.');
-      }
       return;
     }
 
     try {
       await this.paymentStatusRealtimeService.joinOrderGroup(orderId);
-      console.log('[PaymentConfirmation] Joined SignalR group for order:', orderId);
       this.joinedOrderId = orderId;
     } catch (err) {
+      // TODO: log the error
       console.error('[PaymentConfirmation] Failed to join SignalR group for order:', orderId, err);
       throw err;
     }

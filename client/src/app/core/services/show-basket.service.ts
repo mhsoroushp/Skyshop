@@ -49,7 +49,6 @@ export class ShowBasketService {
     getBasket(){
         this.http.get<BasketItem[]>(this.baseUrl).subscribe({
             next: (basket) => {
-                console.log('Fetched basket items:', basket);
                 this._basketItems.set(basket);
             },
             error: (err) => {

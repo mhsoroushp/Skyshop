@@ -48,7 +48,8 @@ export class PaymentConfirmationComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.destroyOrderIdWithSuccessfulPayment = this.orderService.orderIdWithSuccessfulPayment$.subscribe((orderId) => {
-      console.log('[PaymentConfirmation] Received orderId with successful payment:', orderId);
+      // TODO: log the orderId for debugging
+      // console.log('[PaymentConfirmation] Received orderId with successful payment:', orderId);
       this.orderId = orderId;
 
       this.orderService.getOrderById(orderId).subscribe({
@@ -63,6 +64,7 @@ export class PaymentConfirmationComponent implements OnInit, OnDestroy {
           this.cdr.detectChanges();
         },
         error: (err) => {
+          // TODO: log the error for debugging
           console.error('[PaymentConfirmation] Error fetching order details:', err);
           this.error = 'Failed to fetch order details.';
         }

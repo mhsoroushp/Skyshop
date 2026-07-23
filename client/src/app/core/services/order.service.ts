@@ -24,7 +24,6 @@ export class OrderService {
     pipe(
       tap((order) => {
         if (order) {
-          console.log('Order created in service and set in signal:', order);
           this._currentOrder.set(order);
         }
       })

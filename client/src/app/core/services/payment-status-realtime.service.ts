@@ -39,7 +39,6 @@ export class PaymentStatusRealtimeService {
       this.hubConnection.onreconnected((id) => console.log('[SignalR] Reconnected, connectionId:', id));
 
       this.hubConnection.on('PaymentStatusUpdated', (update: PaymentStatusUpdate) => {
-        console.log('[SignalR] PaymentStatusUpdated received:', update);
         this.statusUpdatesSubject.next(update);
       });
     }
@@ -53,7 +52,7 @@ export class PaymentStatusRealtimeService {
   async joinOrderGroup(orderId: string): Promise<void> {
     await this.connect();
     await this.hubConnection?.invoke('JoinOrderGroup', orderId);
-    console.log('[SignalR] Joined order group:', orderId);
+    // console.log('[SignalR] Joined order group:', orderId);
   }
 
   async leaveOrderGroup(orderId: string): Promise<void> {
