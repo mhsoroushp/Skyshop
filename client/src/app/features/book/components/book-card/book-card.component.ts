@@ -10,6 +10,7 @@ import { Router } from "@angular/router";
     standalone: true,
     imports: [CommonModule, MatCardModule, MatButtonModule], 
     templateUrl: './book-card.component.html',
+    styleUrl: './book-card.component.scss'
 })
 export class BookCardComponent {
     @Input() book!: Book;
