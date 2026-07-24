@@ -30,15 +30,19 @@ a {
 mat-toolbar {
   display: flex;
   align-items: center;
-}
-
-.left, .center, .right {
-  display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  height: auto;
+  justify-content: space-between;
+  padding: 10px 20px;
 }
 
 .left {
   flex: 0 0 auto;
+}
+
+.center, .right {
+  display: flex;
+  align-items: center;
 }
 
 .center {
@@ -101,3 +105,72 @@ mat-toolbar {
   align-items: center;
   justify-content: center;
 }
+
+/* @media (max-width: 1024px) {
+  mat-toolbar {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .left {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  .right {
+    order: 2;
+    margin-left: auto;
+    flex: 0 0 auto;
+  }
+
+  .center {
+    order: 3;
+    flex: 1 0 100%;
+    justify-content: stretch;
+  }
+
+  .center .search-field {
+    width: 100%;
+  }
+} */
+
+@media (max-width: 768px) {
+  mat-toolbar {
+    row-gap: 8px;
+  }
+
+  .left {
+    order: 1;
+  }
+
+  .right {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .center {
+    flex: 1 0 100%;
+    order: 3;
+    padding: 8px auto 8px auto;
+    /* justify-content: stretch; */
+  }
+
+  .center .search-field {
+    width: 100%;
+  }
+}
+
+/* @media (max-width: 767px) {
+  .right {
+    gap: 6px;
+  }
+
+  .auth-label {
+    max-width: 38vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+} */

@@ -4,10 +4,6 @@
 
 html {
 	min-height: 100%;
-	background:
-		radial-gradient(circle at top, rgba(245, 158, 11, 0.16), transparent 28%),
-		linear-gradient(180deg, #fffdf8 0%, #f3f6fb 52%, #e8eef7 100%);
-	color: #14213d;
 	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
