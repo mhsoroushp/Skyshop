@@ -283,8 +283,8 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.loading = true;
     this.error = '';
-    this.updateFormDisabledState(true);
-    this.setStripeElementsDisabled(true);
+    // this.updateFormDisabledState(true);
+    // this.setStripeElementsDisabled(true);
 
     const { cardholderName } = this.paymentForm.value;
 
@@ -307,8 +307,8 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
 
         // Handle the failed payment confirmation
         this.loading = false;
-        this.updateFormDisabledState(false);
-        this.setStripeElementsDisabled(false);
+        // this.updateFormDisabledState(false);
+        // this.setStripeElementsDisabled(false);
 
         if (result.error) {
           this.error = result.error.message || 'Payment confirmation failed';
@@ -332,8 +332,8 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
         const message = err instanceof Error ? err.message : 'Unexpected payment error';
         this.error = `Payment failed: ${message}`;
         this.loading = false;
-        this.updateFormDisabledState(false);
-        this.setStripeElementsDisabled(false);
+        // this.updateFormDisabledState(false);
+        // this.setStripeElementsDisabled(false);
       });
   }
 
@@ -356,8 +356,8 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
             error: (err) => {
               this.error = 'Payment failed: ' + (err.error?.message || err.message);
               this.loading = false;
-              this.updateFormDisabledState(false);
-              this.setStripeElementsDisabled(false);
+              // this.updateFormDisabledState(false);
+              // this.setStripeElementsDisabled(false);
             }
           });
       });
@@ -366,8 +366,8 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
   private async afterSuccessfulPayment(): Promise<void> {
     this.success = true;
     this.loading = false;
-    this.updateFormDisabledState(false);
-    this.setStripeElementsDisabled(false);
+    // this.updateFormDisabledState(false);
+    // this.setStripeElementsDisabled(false);
     await this.clearBasketAfterPayment();
     this.orderService.clearCurrentOrderAfterPaymentSuccess();
   }

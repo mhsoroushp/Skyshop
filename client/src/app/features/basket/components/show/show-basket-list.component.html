@@ -19,11 +19,11 @@
           <div class="product-item">
             <!-- Product Image -->
             <div class="product-image-wrapper">
-              <!-- <img 
-                [src]="'https://via.placeholder.com/60x60?text=P' + item.productId" 
+              <img 
+                src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1000&q=80"
                 class="product-image"
-                (error)="handleImageError($event)"
-              /> -->
+                alt="{{ item.productName }}"
+              />
             </div>
             
             <!-- Product Info, Delete, Quantity, Price -->
@@ -32,17 +32,15 @@
                 <h3 class="product-title">{{ item.productName }}</h3>
                 <!-- Delete Button -->
                 <button 
-                  class="btn-delete" 
-                  mat-button 
-                  color="warn"
+                  class="text-red-600 hover:text-red-700 cursor-pointer" 
                   (click)="removeFromBasket(item.productId)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
 
-              <div class="product-details">
-                <p class="product-description">Selected item ID: short description</p>
-              </div>
+              <!-- <div class="product-details">
+                <p class="product-description">{{item.author}}</p>
+              </div> -->
               
               <div class="product-actions">
                 <!-- Quantity Input -->

@@ -1,12 +1,13 @@
 import { Component, inject } from "@angular/core";
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Book } from "../../book/models/book.model";
+import { CommonModule } from "@angular/common";
 import { ShowBasketService } from "../../../core/services/show-basket.service";
 
 @Component({
     selector: 'app-shop-home', 
     standalone: true,
-    imports: [RouterLink], 
+    imports: [CommonModule, RouterLink], 
     templateUrl: './shop-home.component.html',
 })
 export class ShopHomeComponent{

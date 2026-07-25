@@ -92,37 +92,4 @@ export class ShowBasketListComponent implements OnInit {
       }
     });
   }
-
-
-  // TODO : Learn this for singal updating
-  /**
-   * Update quantity of an item
-   */
-//   updateQuantity(id: number, event: Event): void {
-//     const input = event.target as HTMLInputElement;
-//     const quantity = Math.max(1, Math.min(99, Number(input.value)));
-    
-//     this.basketService.updateQuantity(id, quantity).subscribe({
-//       next: () => {
-//         // Update local state
-//         const items = this.basketItems();
-//         const updatedItems = items.map(item => 
-//           item.id === id ? { ...item, quantity } : item
-//         );
-//         this.basketItems.set(updatedItems);
-//         this.updateTotalPrice();
-//       },
-//       error: (err: unknown) => {
-//         console.error('Error updating quantity:', err);
-//       }
-//     });
-//   }
-  
-  /**
-   * Handle image load error - show fallback
-   */
-  handleImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.src = 'https://via.placeholder.com/60x60?text=No+Image';
-  }
 }

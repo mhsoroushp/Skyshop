@@ -60,10 +60,6 @@ export class BookListComponent implements OnInit, AfterViewChecked {
     this.loadBooks();
   }
 
-  onFavorite(book: Book): void {
-    console.log('Favorite book:', book);
-  }
-
   trackById(index: number, book: Book) {
     return book.id;
   }

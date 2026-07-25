@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject } from "@angular/core";
+import { Component, Input, inject } from "@angular/core";
 import { Book } from "../../models/book.model";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from '@angular/material/card';
@@ -15,13 +15,7 @@ import { Router } from "@angular/router";
 export class BookCardComponent {
     @Input() book!: Book;
 
-    @Output() favorite = new EventEmitter<Book>();
-
     router = inject(Router);
-
-    markFavorite(): void {
-        this.favorite.emit(this.book);
-    }
 
     selectBook(): void {
         this.router.navigate(['/shop/home'], {
