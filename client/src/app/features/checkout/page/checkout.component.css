@@ -59,7 +59,7 @@
   width: 100%;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1025px) {
   .checkout-container {
     flex-direction: column;
   }

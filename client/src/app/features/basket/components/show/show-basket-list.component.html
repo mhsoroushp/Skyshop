@@ -17,7 +17,6 @@
 
         @for (item of showBasketService.basketItems(); track item.productId) {
           <div class="product-item">
-            <!-- Product Image -->
             <div class="product-image-wrapper">
               <img 
                 src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1000&q=80"
@@ -26,24 +25,14 @@
               />
             </div>
             
-            <!-- Product Info, Delete, Quantity, Price -->
             <div class="product-content">
-              <div class="product-info">
                 <h3 class="product-title">{{ item.productName }}</h3>
-                <!-- Delete Button -->
                 <button 
                   class="text-red-600 hover:text-red-700 cursor-pointer" 
                   (click)="removeFromBasket(item.productId)">
                   <mat-icon>delete</mat-icon>
                 </button>
-              </div>
 
-              <!-- <div class="product-details">
-                <p class="product-description">{{item.author}}</p>
-              </div> -->
-              
-              <div class="product-actions">
-                <!-- Quantity Input -->
                 <div class="quantity-wrapper">
                   <label class="quantity-label">Quantity:</label>
                   <input 
@@ -56,12 +45,10 @@
                   />
                 </div>
                 
-                <!-- Price -->
                 <div class="price-wrapper">
                   <span class="price-label">Price:</span>
                   <span class="product-price">{{ item.price | currency:'CHF':'symbol':'1.2-2' }}</span>
                 </div>
-              </div>
             </div>
           </div>
         }
