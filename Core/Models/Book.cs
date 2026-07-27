@@ -7,4 +7,5 @@ public class Book
     public required string Author { get; set; }
     public required string Description { get; set; }
     public required decimal Price { get; set; }
+    public string? CoverImageUrl { get; set; }
 }

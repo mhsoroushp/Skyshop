@@ -1,4 +1,5 @@
 using API.DTOs;
+using Core.Interfaces;
 using Core.Models;
 
 namespace API.Extensions;
@@ -25,7 +26,9 @@ public static class BookMappingExtensions
             Title = book.Title,
             Author = book.Author,
             Description = book.Description,
-            Price = book.Price
+            Price = book.Price,
+            CoverImageUrl = book.CoverImageUrl,
+            CoverImageBase64 = string.Empty
         };
     }
 

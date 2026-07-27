@@ -11,17 +11,43 @@ namespace API.Controllers;
 [AllowAnonymous]
 [ApiController]
 [Route("api/[controller]")]
-public class BookController(IBookRepository repo) : ControllerBase
+public class BookController(IBookRepository repo, IBlobStorageService blobStorageService) : ControllerBase
 { 
     [HttpGet]
-    public async Task<ActionResult<BookPaging>> GetBooks([FromQuery] BookQueryParams bookQueryParams)
+    public async Task<ActionResult<BookPagingDto>> GetBooks([FromQuery] BookQueryParams bookQueryParams)
     {
         // it is good to replace BookPaging with BookPaging Dto
 
         var bookPaging = await repo.GetAllAsync(bookQueryParams);
         //var bookDtos = books.Select(book => BookMappingExtensions.ToBookDto(book)).ToList();
 
-        return Ok(bookPaging);
+        var bookPagingDto = new BookPagingDto
+        {
+            HasPreviousPage = bookPaging.HasPreviousPage,
+            HasNextPage = bookPaging.HasNextPage,
+            TotalPages = bookPaging.TotalPages,
+            PageIndex = bookPaging.PageIndex,
+            PageSize = bookPaging.PageSize,
+            TotalItems = bookPaging.TotalItems,
+            Items = bookPaging.Items.Select(book => BookMappingExtensions.ToBookDto(book)).ToList()
+        };
+
+        foreach (var book in bookPagingDto.Items)
+        {
+            try
+            {
+                var imageBytes = await blobStorageService.DownloadImageAsBytesAsync(book.CoverImageUrl ?? string.Empty);
+                book.CoverImageBase64 = Convert.ToBase64String(imageBytes);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and continue
+                Console.WriteLine($"Error downloading image for book {book.Id}: {ex.Message}");
+                book.CoverImageBase64 = string.Empty; // or set to a default image
+            }
+        }
+
+        return Ok(bookPagingDto);
     }
 
     [HttpGet("{id}")]

@@ -17,6 +17,14 @@ export class BookCardComponent {
 
     router = inject(Router);
 
+    get coverImageSrc(): string {
+        if (!this.book?.coverImageBase64) {
+            return 'https://material.angular.dev/assets/img/examples/shiba2.jpg';
+        }
+
+        return `data:image/jpeg;base64,${this.book.coverImageBase64}`;
+    }
+
     selectBook(): void {
         this.router.navigate(['/shop/home'], {
             queryParams: this.book

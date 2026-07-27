@@ -14,5 +14,8 @@ public class BookDto
     public string Description { get; set; } = string.Empty;
     [Required]
     public decimal Price { get; set; } = 0m;
+
+    public string? CoverImageUrl { get; set; } = string.Empty;
+    public string CoverImageBase64 { get; set; } = string.Empty;
 }
 

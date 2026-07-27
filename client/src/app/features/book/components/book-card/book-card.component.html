@@ -2,7 +2,7 @@
   class="example-card cursor-pointer hover:shadow-lg transition-shadow"
   appearance="outlined"
   (click)="selectBook()">
-  <img mat-card-image src="https://material.angular.dev/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">
+  <img mat-card-image [src]="coverImageSrc" [alt]="book.title">
   <mat-card-content>
   </mat-card-content>
   <mat-card-footer>

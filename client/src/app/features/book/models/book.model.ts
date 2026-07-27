@@ -4,4 +4,5 @@ export interface Book {
   author: string;
   description: string;
   price: number;
-}   
+  coverImageBase64?: string;
+}
