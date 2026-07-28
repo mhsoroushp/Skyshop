@@ -1,8 +1,10 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Book } from "../../book/models/book.model";
 import { CommonModule } from "@angular/common";
 import { ShowBasketService } from "../../../core/services/show-basket.service";
+import { BookService } from "../../book/services/book.service";
+import { catchError, of, switchMap } from "rxjs";
 
 @Component({
     selector: 'app-shop-home', 
@@ -12,19 +14,42 @@ import { ShowBasketService } from "../../../core/services/show-basket.service";
 })
 export class ShopHomeComponent{
 
-    selectedBook: Book | undefined = undefined;
+    selectedBook = signal<Book | undefined>(undefined);
+    isLoading = signal(true);
 
     showBasketService = inject(ShowBasketService);
+    bookService = inject(BookService);
 
     constructor(private route: ActivatedRoute){
-        this.route.queryParams.subscribe(_book => {
-            this.selectedBook = _book as unknown as Book;
+        this.route.queryParamMap.pipe(
+            switchMap(params => {
+                const selectedBookId = params.get('selectedBookId');
+
+                if (!selectedBookId) {
+                    this.selectedBook.set(undefined);
+                    this.isLoading.set(false);
+                    return of(null);
+                }
+
+                this.isLoading.set(true);
+                return this.bookService.getBookById(selectedBookId as unknown as number).pipe(
+                    catchError(() => of(null))
+                );
+            })
+        ).subscribe(book => {
+            if (book) {
+                this.selectedBook.set(book);
+            }
+
+            this.isLoading.set(false);
         });
     }
 
+
     addToBasket(): void {
-        if(this.selectedBook){
-            this.showBasketService.addToBasket(this.selectedBook.id, 1).subscribe({
+        const selectedBook = this.selectedBook();
+        if(selectedBook){
+            this.showBasketService.addToBasket(selectedBook.id, 1).subscribe({
                 next: () => {
                 },
                 error: (err) => {
@@ -34,5 +59,14 @@ export class ShopHomeComponent{
         } else {
             console.warn('No book selected to add to basket');
         }
+    }
+
+    coverImageSrcsss(): string {
+        const selectedBook = this.selectedBook();
+        if (!selectedBook?.coverImageBase64) {
+            return "";
+        }
+
+        return `data:image/jpeg;base64,${selectedBook.coverImageBase64}`;
     }
 }

@@ -8,12 +8,19 @@ public class CartService : ICartService
 	private readonly ICartRepository _cartRepository;
 	private readonly IHttpContextAccessor _httpContextAccessor;
 	private readonly IBookRepository _bookRepository;
+	private readonly IBlobStorageService _blobStorageService;
 
-	public CartService(ICartRepository cartRepository, IHttpContextAccessor httpContextAccessor, IBookRepository bookRepository)
+	public CartService(
+		ICartRepository cartRepository, 
+		IHttpContextAccessor httpContextAccessor, 
+		IBookRepository bookRepository,
+		IBlobStorageService blobStorageService
+		)
 	{
 		_cartRepository = cartRepository;
 		_httpContextAccessor = httpContextAccessor;
 		_bookRepository = bookRepository;
+		_blobStorageService = blobStorageService;
 	}
 
 	public async Task AddToBasket(Guid productId, int quantity)
@@ -37,8 +44,6 @@ public class CartService : ICartService
 		var basketItems = new List<BasketItem>();
 		foreach (var entry in basketEntries)
 		{
-			Console.WriteLine($"Fetching book for ProductId: {entry.ProductId}");
-
 			var book = await _bookRepository.GetByIdAsync(entry.ProductId);
 			if (book is null)
 			{
@@ -47,12 +52,16 @@ public class CartService : ICartService
 				continue;
 			}
 
+			// get product image from azure blob storage
+			var imageBytes = await _blobStorageService.DownloadImageAsBytesAsync(book.CoverImageUrl ?? string.Empty);
+
 			basketItems.Add(new BasketItem
 			{
 				ProductId = entry.ProductId,
 				Quantity = entry.Quantity,
 				Price = book.Price,
-				ProductName = book.Title
+				ProductName = book.Title,
+				ProductImageBase64 = Convert.ToBase64String(imageBytes)
 			});
 		}
 

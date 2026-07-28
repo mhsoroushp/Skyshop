@@ -92,4 +92,11 @@ export class ShowBasketListComponent implements OnInit {
       }
     });
   }
+
+  getProductImageSrc(imageBase64: string | undefined): string {
+    if (!imageBase64) {
+      return '';
+    }
+    return `data:image/jpeg;base64,${imageBase64}`;
+  }
 }

@@ -4,6 +4,7 @@ import { CommonModule } from "@angular/common";
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from "@angular/router";
+import { BookService } from "../../services/book.service";
 
 @Component({
     selector: 'app-book-card', 
@@ -16,6 +17,7 @@ export class BookCardComponent {
     @Input() book!: Book;
 
     router = inject(Router);
+    bookService = inject(BookService);
 
     get coverImageSrc(): string {
         if (!this.book?.coverImageBase64) {
@@ -27,7 +29,7 @@ export class BookCardComponent {
 
     selectBook(): void {
         this.router.navigate(['/shop/home'], {
-            queryParams: this.book
+            queryParams: { selectedBookId: this.book.id }
         });
     }
 }

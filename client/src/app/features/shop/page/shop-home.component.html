@@ -8,11 +8,11 @@
       </div>
     </div>
 
-    <div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+    <div *ngIf="selectedBook() as book; else loadingState" class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
       <div class="rounded-2xl bg-slate-100 p-4 sm:p-6">
         <div class="overflow-hidden rounded-1xl bg-white shadow-sm">
           <img
-            src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1000&q=80"
+            [src]="coverImageSrcsss()"
             alt="Book cover"
             class="h-[420px] w-full object-cover"
           />
@@ -20,7 +20,7 @@
         <div class="mt-6 space-y-4 rounded-1xl bg-white p-5 shadow-sm">
           <h2 class="text-lg font-semibold text-slate-900">About this book</h2>
           <p class="text-sm leading-6 text-slate-600">
-          {{selectedBook?.author || 'Description not available'}}
+          {{book.description || 'Description not available'}}
           </p>
           <dl class="grid gap-3 sm:grid-cols-2">
             <div class="rounded-2xl bg-slate-50 p-4">
@@ -38,14 +38,14 @@
       <div class="space-y-6">
         <div class="rounded-2xl bg-slate-100 p-6 shadow-sm sm:p-8">
           <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Buchdetails</p>
-          <h1 class="mt-4 text-4xl font-semibold tracking-tight text-slate-900">{{selectedBook?.title || 'Book Title'}}</h1>
-          <p class="mt-3 text-base text-slate-600">von <span class="font-semibold text-slate-900">{{selectedBook?.author || 'Unknown Author'}}</span></p>
+          <h1 class="mt-4 text-4xl font-semibold tracking-tight text-slate-900">{{book.title || 'Book Title'}}</h1>
+          <p class="mt-3 text-base text-slate-600">von <span class="font-semibold text-slate-900">{{book.author || 'Unknown Author'}}</span></p>
 
           <div class="mt-6 space-y-4 rounded-1xl bg-white p-5 shadow-sm">
             <div class="flex items-center justify-between gap-4">
               <div>
                 <p class="text-sm text-slate-500">Preis</p>
-                <p class="text-3xl font-semibold text-slate-900">{{selectedBook?.price | currency:'CHF'}}</p>
+                <p class="text-3xl font-semibold text-slate-900">{{book.price | currency:'CHF'}}</p>
               </div>
               <div class="rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700">Sofort lieferbar</div>
             </div>
@@ -78,5 +78,11 @@
         </div>
       </div>
     </div>
+
+    <ng-template #loadingState>
+      <div class="rounded-2xl bg-slate-100 p-6 text-sm text-slate-600">
+        {{ isLoading() ? 'Loading book details...' : 'Book details not found.' }}
+      </div>
+    </ng-template>
   </div>
 </div>

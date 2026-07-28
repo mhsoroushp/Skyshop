@@ -8,6 +8,7 @@ export interface BasketItem {
   quantity: number;
   price?: number;
   productName?: string;
+  productImageBase64?: string;
 }
 
 

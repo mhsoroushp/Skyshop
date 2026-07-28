@@ -66,6 +66,18 @@ public class BookController(IBookRepository repo, IBlobStorageService blobStorag
 
         var bookDto = BookMappingExtensions.ToBookDto(book);
 
+        try
+        {
+            var imageBytes = await blobStorageService.DownloadImageAsBytesAsync(bookDto.CoverImageUrl ?? string.Empty);
+            bookDto.CoverImageBase64 = Convert.ToBase64String(imageBytes);
+        }
+        catch (Exception ex)
+        {
+            // Log the exception and continue
+            Console.WriteLine($"Error downloading image for book {bookDto.Id}: {ex.Message}");
+            bookDto.CoverImageBase64 = string.Empty; // or set to a default image
+        }
+
         return Ok(bookDto);
     }
 
