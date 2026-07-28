@@ -1,3 +1,11 @@
-.dashboard-page {
+/* .dashboard-page {
       padding: 12px 0;
+} */
+
+
+@media (min-width: 1024px) {
+  .dashboard-page {
+    padding-left: 100px;
+    padding-right: 100px;
+  }
 }

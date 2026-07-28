@@ -23,7 +23,7 @@ export class BookListComponent implements OnInit, AfterViewChecked {
   books: Book[] = [];
   request: BookSearchRequest = {
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 6,
     totalCount: 0
   };
 
