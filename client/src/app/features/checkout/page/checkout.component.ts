@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { DeliveryAddressComponent } from '../delivery-address/delivery-address.component';
-import { ShowBasketListComponent } from '../../basket/components/show/show-basket-list.component';
+import { BasketListComponent } from '../../basket/components/show/basket-list.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { PaymentMethodsComponent } from '../payment-method/payment-methods.component';
 import { PaymentConfirmationComponent } from '../confirmation/payment-confirmation.component';
@@ -17,7 +17,7 @@ interface TabProccessed {
   standalone: true,
   imports: [
     CommonModule,
-    ShowBasketListComponent,
+    BasketListComponent,
     MatExpansionModule,
     DeliveryAddressComponent,
     PaymentMethodsComponent,

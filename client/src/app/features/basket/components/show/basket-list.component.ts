@@ -3,19 +3,12 @@ import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { CurrencyPipe } from '@angular/common';
-import { ShowBasketService } from '../../../../core/services/show-basket.service';
+import { BasketService } from '../../../../core/services/basket.service';
+import { BasketViewItem } from '../../../../core/models/baskets.model';
 
-export interface BasketViewItem {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
 
 @Component({
-  selector: 'app-show-basket-list',
+  selector: 'app-basket-list',
   standalone: true,
   imports: [
     MatIcon,
@@ -23,11 +16,11 @@ export interface BasketViewItem {
     RouterLink,
     CurrencyPipe
   ],
-  templateUrl: './show-basket-list.component.html',
-  styleUrls: ['./show-basket-list.component.css']
+  templateUrl: './basket-list.component.html',
+  styleUrls: ['./basket-list.component.css']
 })
-export class ShowBasketListComponent implements OnInit {
-  showBasketService = inject(ShowBasketService);
+export class BasketListComponent {
+  basketService = inject(BasketService);
   
   // TODO: deltet
   // Signal for basket items
@@ -36,28 +29,16 @@ export class ShowBasketListComponent implements OnInit {
   // Computed signal for total price
   totalPrice = signal<number>(0);
   
-  constructor() {
-  }
-
-  ngOnInit(): void {
-  }
   
-  
-  /**
-   * Update total price computed from basket items
-   */
   updateTotalPrice(): void {
     const items = this.basketItems();
     const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     this.totalPrice.set(total);
   }
   
-  /**
-   * Remove item from basket
-   */
   removeFromBasket(id: number): void {
 
-    this.showBasketService.removeFromBasket(id).subscribe({
+    this.basketService.removeFromBasket(id).subscribe({
       next: () => {
         //TODO: notification
       },
@@ -66,13 +47,12 @@ export class ShowBasketListComponent implements OnInit {
       }
     });
   }
-  
 
   updateQuantity(id: number, event: Event): void {
     const input = event.target as HTMLInputElement;
     const quantity = Math.max(1, Math.min(99, Number(input.value)));
     
-    this.showBasketService.updateQuantity(id, quantity).subscribe({
+    this.basketService.updateQuantity(id, quantity).subscribe({
       next: () => {
         //TODO: notification
       },
@@ -83,7 +63,7 @@ export class ShowBasketListComponent implements OnInit {
   }
 
   clearBasket(): void {
-    this.showBasketService.clearBasket().subscribe({
+    this.basketService.clearBasket().subscribe({
       next: () => {
         // TODO: notification
       },

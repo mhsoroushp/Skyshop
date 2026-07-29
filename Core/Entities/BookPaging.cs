@@ -1,5 +1,5 @@
     
-    namespace Core.Models;
+    namespace Core.Entities;
     public class BookPaging
     {
         public bool HasPreviousPage {get; set;}

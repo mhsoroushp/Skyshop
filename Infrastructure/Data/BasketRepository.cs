@@ -1,13 +1,14 @@
+using Core.DTOs;
 using Core.Interfaces;
 using StackExchange.Redis;
 
 namespace Infrastructure.Data;
 
-public class CartRepository : ICartRepository
+public class BasketRepository : IBasketRepository
 {
     private readonly IDatabase _redis;
 
-    public CartRepository(IConnectionMultiplexer redis)
+    public BasketRepository(IConnectionMultiplexer redis)
     {
         _redis = redis.GetDatabase();
     }
@@ -21,13 +22,13 @@ public class CartRepository : ICartRepository
         await _redis.KeyExpireAsync(basketKey, TimeSpan.FromDays(7));
     }
 
-    public async Task<BasketQuantityItem[]> GetBasket(string basketKey)
+    public async Task<List<BasketQuantityItem>> GetBasket(string basketKey)
     {
         // Get all products and quantities
         var hashEntries = await _redis.HashGetAllAsync(basketKey);
 
         if (hashEntries.Length == 0)
-            return Array.Empty<BasketQuantityItem>();
+            return [];
 
         var basketItems = new List<BasketQuantityItem>();
         foreach (var entry in hashEntries)
@@ -44,7 +45,7 @@ public class CartRepository : ICartRepository
             });
         }
 
-        return basketItems.ToArray();
+        return basketItems;
     }
 
     public async Task RemoveFromBasket(string basketKey, Guid productId)

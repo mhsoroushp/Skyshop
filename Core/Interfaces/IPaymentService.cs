@@ -1,4 +1,5 @@
-using Core.Models;
+using Core.Entities;
+using Core.Enums;
 
 namespace Core.Interfaces;
 

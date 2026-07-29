@@ -1,6 +1,6 @@
 using API.DTOs;
 using Core.Interfaces;
-using Core.Models;
+using Core.Entities;
 
 namespace API.Extensions;
 

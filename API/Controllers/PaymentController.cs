@@ -1,14 +1,13 @@
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces;
 using API.DTOs;
-using Core.Models;
+using Core.Entities;
 using API.Hubs;
 using Infrastructure.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 using Stripe;
+using Core.Enums;
 
 
 namespace API.Controllers;
@@ -19,7 +18,7 @@ public class PaymentController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
     private readonly IOrderService _orderService;
-    private readonly ICartRepository _cartRepository;
+    private readonly IBasketRepository _basketRepo;
     private readonly IStripeService _stripeService;
     private readonly IStripeWebhookEventService _stripeWebhookEventService;
     private readonly IHubContext<PaymentStatusHub> _hubContext;
@@ -28,7 +27,7 @@ public class PaymentController : ControllerBase
     public PaymentController(
         IPaymentService paymentService,
         IOrderService orderService,
-        ICartRepository cartRepository,
+        IBasketRepository basketRepository,
         IStripeService stripeService,
         IStripeWebhookEventService stripeWebhookEventService,
         IHubContext<PaymentStatusHub> hubContext,
@@ -36,7 +35,7 @@ public class PaymentController : ControllerBase
     {
         _paymentService = paymentService;
         _orderService = orderService;
-        _cartRepository = cartRepository;
+        _basketRepo = basketRepository;
         _stripeService = stripeService;
         _stripeWebhookEventService = stripeWebhookEventService;
         _hubContext = hubContext;
@@ -85,7 +84,7 @@ public class PaymentController : ControllerBase
             // Idempotent payment creation: reuse existing payment for this order if it already exists.
             var payment = await _paymentService.CreatePaymentAsync(order.Id, order.TotalAmount);
 
-            if (payment.Status == Core.Models.PaymentStatus.Succeeded)
+            if (payment.Status == PaymentStatus.Succeeded)
             {
                 return BadRequest(new { Message = "Payment already completed for this order" });
             }
@@ -312,7 +311,7 @@ public class PaymentController : ControllerBase
             var order = await _orderService.GetOrderByIdAsync(payment.OrderId);
             if (!string.IsNullOrWhiteSpace(order?.SessionId))
             {
-                await _cartRepository.ClearBasket(order.SessionId);
+                await _basketRepo.ClearBasket(order.SessionId);
             }
 
             await PublishPaymentStatusUpdate(
@@ -349,7 +348,7 @@ public class PaymentController : ControllerBase
             }
 
             // Idempotency: only update if status is not already Failed
-            if (payment.Status == Core.Models.PaymentStatus.Failed)
+            if (payment.Status == PaymentStatus.Failed)
             {
                 Console.WriteLine($"Payment {payment.Id} already marked as Failed, skipping");
                 return;
@@ -362,12 +361,12 @@ public class PaymentController : ControllerBase
             // Update order status to Cancelled
             await _orderService.UpdateOrderStatusAsync(
                 payment.OrderId,
-                Core.Models.OrderStatus.Cancelled);
+                OrderStatus.Cancelled);
 
             await PublishPaymentStatusUpdate(
                 payment.OrderId,
-                Core.Models.PaymentStatus.Failed.ToString(),
-                Core.Models.OrderStatus.Cancelled.ToString(),
+                PaymentStatus.Failed.ToString(),
+                OrderStatus.Cancelled.ToString(),
                 errorMessage);
 
             Console.WriteLine($"Payment {payment.Id} updated to Failed, Order {payment.OrderId} updated to Cancelled");
@@ -398,7 +397,7 @@ public class PaymentController : ControllerBase
             }
 
             // Idempotency: only update if status is not already Cancelled
-            if (payment.Status == Core.Models.PaymentStatus.Cancelled)
+            if (payment.Status == PaymentStatus.Cancelled)
             {
                 Console.WriteLine($"Payment {payment.Id} already marked as Cancelled, skipping");
                 return;
@@ -407,18 +406,18 @@ public class PaymentController : ControllerBase
             // Update payment status
             await _paymentService.UpdatePaymentStatusAsync(
                 payment.Id,
-                Core.Models.PaymentStatus.Cancelled,
+                PaymentStatus.Cancelled,
                 paymentIntent.Id);
 
             // Update order status to Cancelled
             await _orderService.UpdateOrderStatusAsync(
                 payment.OrderId,
-                Core.Models.OrderStatus.Cancelled);
+                OrderStatus.Cancelled);
 
             await PublishPaymentStatusUpdate(
                 payment.OrderId,
-                Core.Models.PaymentStatus.Cancelled.ToString(),
-                Core.Models.OrderStatus.Cancelled.ToString(),
+                PaymentStatus.Cancelled.ToString(),
+                OrderStatus.Cancelled.ToString(),
                 "Payment canceled");
 
             Console.WriteLine($"Payment {payment.Id} updated to Cancelled, Order {payment.OrderId} updated to Cancelled");
@@ -454,8 +453,8 @@ public class PaymentController : ControllerBase
 
             await PublishPaymentStatusUpdate(
                 payment.OrderId,
-                Core.Models.PaymentStatus.Failed.ToString(),
-                Core.Models.OrderStatus.Cancelled.ToString(),
+                PaymentStatus.Failed.ToString(),
+                OrderStatus.Cancelled.ToString(),
                 errorMessage);
 
             Console.WriteLine($"Payment {payment.Id} error updated: {errorMessage}");

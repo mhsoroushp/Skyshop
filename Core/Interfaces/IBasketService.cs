@@ -1,9 +1,11 @@
+using Core.DTOs;
+
 namespace Core.Interfaces;
 
-public interface ICartService
+public interface IBasketService
 {
-	Task AddToBasket(Guid productId, int quantity);
-	Task<BasketItem[]> GetBasket();
+	Task AddToBasket(AddToBasketRequest request);
+	Task<List<BasketItem>> GetBasket();
 	Task RemoveFromBasket(Guid productId);
 	Task UpdateQuantity(Guid productId, int quantity);
 	Task ClearBasket();

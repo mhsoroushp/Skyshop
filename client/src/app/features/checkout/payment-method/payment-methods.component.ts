@@ -19,7 +19,7 @@ import {
 } from '@stripe/stripe-js';
 import { PaymentService } from '../../../core/services/payment.service';
 import { environment } from '../../../../environments/environment';
-import { ShowBasketService } from '../../../core/services/show-basket.service';
+import { BasketService } from '../../../core/services/basket.service';
 import { PaymentStatusRealtimeService } from '../../../core/services/payment-status-realtime.service';
 import { takeUntil } from 'rxjs';
 import { OrderService } from '../../../core/services/order.service';
@@ -42,7 +42,7 @@ import { OrderService } from '../../../core/services/order.service';
 })
 export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy {
   @Output() IsPaymentCompleted = new EventEmitter<boolean>(false);
-  showBasketService = inject(ShowBasketService);
+  basketService = inject(BasketService);
   orderService = inject(OrderService);
   private readonly watchOrderForRealtimeJoin = effect(() => {
     const currentOrder = this.orderService.currentOrder$();
@@ -374,7 +374,7 @@ export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy
 
   private clearBasketAfterPayment(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.showBasketService.clearBasket().subscribe({
+      this.basketService.clearBasket().subscribe({
         next: () => {
           resolve();
         },

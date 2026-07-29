@@ -2,7 +2,7 @@
 using Core.Interfaces;
 using Core.Queries;
 using API.DTOs;
-using Core.Models;
+using Core.Entities;
 namespace Infrastructure.Data;
 
 

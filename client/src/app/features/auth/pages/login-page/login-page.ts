@@ -205,7 +205,7 @@ export class LoginPage {
     this.authService.login({ email, password }).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/shop/home']);
+        this.router.navigate(['/dashboard']);
         this.cdr.detectChanges();
       },
       error: (err: { error?: { title?: string; message?: string; detail?: string } }) => {

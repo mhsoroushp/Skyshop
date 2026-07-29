@@ -1,5 +1,6 @@
 using Core.Interfaces;
-using Core.Models;
+using Core.Entities;
+using Core.Enums;
 
 namespace Infrastructure.Data;
 

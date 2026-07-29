@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces;
 using API.DTOs;
-using Core.Models;
+using Core.Entities;
 using System.Security.Claims;
 using API.Extensions;
 

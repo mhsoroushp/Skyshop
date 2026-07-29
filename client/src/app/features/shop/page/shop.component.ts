@@ -2,7 +2,7 @@ import { Component, inject, signal } from "@angular/core";
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Book } from "../../../core/models/book.model";
 import { CommonModule } from "@angular/common";
-import { ShowBasketService } from "../../../core/services/show-basket.service";
+import { BasketService } from "../../../core/services/basket.service";
 import { BookService } from "../../../core/services/book.service";
 import { catchError, of, switchMap } from "rxjs";
 
@@ -17,7 +17,7 @@ export class ShopComponent{
     selectedBook = signal<Book | undefined>(undefined);
     isLoading = signal(true);
 
-    showBasketService = inject(ShowBasketService);
+    basketService = inject(BasketService);
     bookService = inject(BookService);
 
     constructor(private route: ActivatedRoute){
@@ -45,11 +45,10 @@ export class ShopComponent{
         });
     }
 
-
     addToBasket(): void {
         const selectedBook = this.selectedBook();
         if(selectedBook){
-            this.showBasketService.addToBasket(selectedBook.id, 1).subscribe({
+            this.basketService.addToBasket(selectedBook.id, 1).subscribe({
                 next: () => {
                 },
                 error: (err) => {
@@ -61,7 +60,7 @@ export class ShopComponent{
         }
     }
 
-    coverImageSrcsss(): string {
+    coverImageSrc(): string {
         const selectedBook = this.selectedBook();
         if (!selectedBook?.coverImageBase64) {
             return "";

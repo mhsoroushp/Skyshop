@@ -1,6 +1,7 @@
 using Core.Interfaces;
-using Core.Models;
+using Core.Entities;
 using Microsoft.Extensions.Configuration;
+using Core.Enums;
 
 namespace Infrastructure.Services;
 

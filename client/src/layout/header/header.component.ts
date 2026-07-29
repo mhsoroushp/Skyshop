@@ -5,7 +5,7 @@ import { MatBadge } from '@angular/material/badge';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../app/core/services/auth.service';
-import { ShowBasketService } from '../../app/core/services/show-basket.service';
+import { BasketService } from '../../app/core/services/basket.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
@@ -29,7 +29,7 @@ export class HeaderComponent implements OnInit {
 
   basketCount = signal(0);
 
-  showBasketService = inject(ShowBasketService);
+  basketService = inject(BasketService);
   authService = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -41,23 +41,4 @@ export class HeaderComponent implements OnInit {
       this.router.navigate(['/auth']);
     });
   }
-
-  // loadBasketCount(){
-  //   this.basketService.getBasketCount().subscribe({
-  //     next: (data) => {
-  //       console.log("the product count is:", data.count);
-  //       this.basketCount.set(data.count);
-
-  //       console.log("the value of basketCount var:", this.basketCount);
-
-  //     },
-  //     error: (err) => {
-  //       console.error("The error is:", err);
-  //     },
-  //     complete: () => {
-  //       console.log("Basket count subscription completed");
-  //     }
-  //   })
-  // }
-
 }

@@ -8,7 +8,7 @@
       <mat-form-field 
         appearance="outline"
         class="search-field w-full max-w-md">
-        <input matInput type="search" placeholder="Search... (not yet implemented) نفس مه مهدیه" disabled />
+        <input matInput type="search" placeholder="Search... (not yet implemented)" disabled />
 
         <button
           mat-icon-button
@@ -26,7 +26,7 @@
         routerLink="/checkout"
         routerLinkActive="active"
         aria-label="Open basket"
-        [matBadge]="showBasketService.basketItemCount()"
+        [matBadge]="basketService.basketItemCount()"
         matBadgeSize="large">
         <mat-icon>shopping_cart</mat-icon>
       </a>

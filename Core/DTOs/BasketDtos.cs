@@ -1,11 +1,15 @@
-namespace Core.Interfaces;
-public interface ICartRepository
+namespace Core.DTOs;
+
+public sealed class AddToBasketRequest
 {
-    Task AddToBasket(string basketKey, Guid productId, int quantity);
-    Task<BasketQuantityItem[]> GetBasket(string basketKey);
-    Task RemoveFromBasket(string basketKey, Guid productId);
-    Task UpdateQuantity(string basketKey, Guid productId, int quantity);
-    Task ClearBasket(string basketKey);
+    public Guid ProductId { get; set; }
+    public int Quantity { get; set; }
+}
+
+
+public sealed class UpdateQuantityRequest
+{
+    public int Quantity { get; set; }
 }
 
 public class BasketQuantityItem

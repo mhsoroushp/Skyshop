@@ -1,5 +1,5 @@
 using Core.Interfaces;
-using Core.Models;
+using Core.Entities;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
@@ -8,13 +8,13 @@ namespace Infrastructure.Data;
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _orderRepository;
-    private readonly ICartService _cartService;
+    private readonly IBasketService _cartService;
     private readonly IBookRepository _bookRepository;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public OrderService(
         IOrderRepository orderRepository,
-        ICartService cartService,
+        IBasketService cartService,
         IBookRepository bookRepository,
         IHttpContextAccessor httpContextAccessor)
     {
@@ -29,7 +29,7 @@ public class OrderService : IOrderService
         // Get basket items
         var basketItems = await _cartService.GetBasket();
 
-        if (basketItems.Length == 0)
+        if (basketItems.Count == 0)
             throw new InvalidOperationException("Cannot create order from empty basket");
 
         // Calculate total

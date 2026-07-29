@@ -25,7 +25,7 @@ export interface UpdateQuantityRequest {
 @Injectable({
   providedIn: 'root'
 })
-export class ShowBasketService {
+export class BasketService {
 
 
     constructor(private http: HttpClient) {
@@ -99,6 +99,4 @@ export class ShowBasketService {
             })
         );
     }
-
-
 }

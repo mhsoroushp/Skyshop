@@ -1,5 +1,5 @@
 using System.Reflection.PortableExecutable;
-using Core.Models;
+using Core.Entities;
 using Core.Queries;
 
 

@@ -1,4 +1,6 @@
-namespace Core.Models;
+using Core.Enums;
+
+namespace Core.Entities;
 
 public class Payment
 {
@@ -14,23 +16,4 @@ public class Payment
     public string? ErrorMessage { get; set; }
 
     public Order? Order { get; set; }
-}
-
-public enum PaymentStatus
-{
-    Pending,
-    Processing,
-    Succeeded,
-    Failed,
-    Cancelled,
-    Refunded
-}
-
-public enum PaymentMethod
-{
-    CreditCard,
-    DebitCard,
-    PayPal,
-    ApplePay,
-    GooglePay
 }

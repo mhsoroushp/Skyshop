@@ -6,13 +6,12 @@ import { DashboardPage } from './features/dashboard/pages/dashboard/dashboard.co
 import { authGuard } from './core/guards/auth.guard';
 import { canDeactivateGuard } from './core/guards/can-deactivate.guard';
 import { ShopComponent } from './features/shop/page/shop.component';
-import { ShowBasketListComponent } from './features/basket/components/show/show-basket-list.component';
 
 export const routes: Routes = [
   {path : '', redirectTo: 'dashboard', pathMatch: 'full'},
   {path: 'users', component: UsersPage},
 
-  {path: 'show-basket-list', component: ShowBasketListComponent},
+  // {path: 'show-basket-list', component: BasketListComponent},
   {path: 'checkout', 
     loadComponent: () => import('./features/checkout/page/checkout.component')
       .then(c => c.CheckoutComponent)

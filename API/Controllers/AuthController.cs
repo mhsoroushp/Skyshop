@@ -1,7 +1,5 @@
-using System.Linq;
-using System.Security.Claims;
 using System.Text.Json;
-using API.DTOs;
+using Core.DTOs;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;

@@ -1,14 +1,13 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { OrderService } from '../../../core/services/order.service';
-import { Router } from '@angular/router';
 import { CreateOrderRequest } from '../../../core/models/order.model';
 import { MatIconModule } from '@angular/material/icon';
-import { ShowBasketService } from '../../../core/services/show-basket.service';
+import { BasketService } from '../../../core/services/basket.service';
 
 @Component({
   selector: 'app-delivery-address',
@@ -31,13 +30,10 @@ export class DeliveryAddressComponent implements OnInit {
   loading = false;
   error = '';
 
+  basketService = inject(BasketService);
+  orderService = inject(OrderService);
 
-  constructor(
-    private fb: FormBuilder,
-    private orderService: OrderService,
-    private showBasketService: ShowBasketService,
-
-  ){
+  constructor(private fb: FormBuilder){
     this.initializeForm();
   }
 
@@ -62,7 +58,7 @@ export class DeliveryAddressComponent implements OnInit {
   }
 
   canSubmit(): boolean {
-    return this.deliveryForm.valid && !this.loading && !this.success && this.showBasketService.basketItemCount() > 0;
+    return this.deliveryForm.valid && !this.loading && !this.success && this.basketService.basketItemCount() > 0;
   }
 
 
