@@ -24,6 +24,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
 builder.Services.AddScoped<IStripeWebhookEventService, StripeWebhookEventService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
+builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddAuthorization();
 builder.Services
     .AddIdentityApiEndpoints<AppUser>()

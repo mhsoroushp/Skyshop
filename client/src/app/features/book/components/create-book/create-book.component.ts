@@ -1,11 +1,10 @@
 import { Component, inject } from "@angular/core";
-
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BookService } from "../../services/book.service";
-import { Book } from "../../models/book.model";
+import { BookService } from "../../../../core/services/book.service";
+import { Book } from "../../../../core/models/book.model";
 import { Deactivate } from "../../../../core/models/deactivate.model";
 
 @Component({
@@ -28,7 +27,14 @@ export class CreateBookComponent implements Deactivate {
         if (this.bookForm.valid) {
             const { title, author, description, price } = this.bookForm.value;
             const newBookId = this.bookService.books().length + 1; // Simple ID generation
-            const newBook: Book = { id: newBookId, title: title!, author: author!, description: description!, price: Number(price)! };
+            const newBook: Book = { 
+                id: newBookId, 
+                title: title!, 
+                author: author!, 
+                description: description!, 
+                price: Number(price)! 
+            };
+            
             this.bookService.addBook(newBook);
             this.bookForm.reset();
         }

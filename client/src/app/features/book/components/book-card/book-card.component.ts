@@ -1,10 +1,10 @@
 import { Component, Input, inject } from "@angular/core";
-import { Book } from "../../models/book.model";
+import { Book } from "../../../../core/models/book.model";
 import { CommonModule } from "@angular/common";
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from "@angular/router";
-import { BookService } from "../../services/book.service";
+import { BookService } from "../../../../core/services/book.service";
 
 @Component({
     selector: 'app-book-card', 
@@ -21,14 +21,14 @@ export class BookCardComponent {
 
     get coverImageSrc(): string {
         if (!this.book?.coverImageBase64) {
-            return 'https://material.angular.dev/assets/img/examples/shiba2.jpg';
+            return "";
         }
 
         return `data:image/jpeg;base64,${this.book.coverImageBase64}`;
     }
 
     selectBook(): void {
-        this.router.navigate(['/shop/home'], {
+        this.router.navigate(['/shop'], {
             queryParams: { selectedBookId: this.book.id }
         });
     }

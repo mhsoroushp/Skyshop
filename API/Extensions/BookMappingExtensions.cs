@@ -27,7 +27,6 @@ public static class BookMappingExtensions
             Author = book.Author,
             Description = book.Description,
             Price = book.Price,
-            CoverImageUrl = book.CoverImageUrl,
             CoverImageBase64 = string.Empty
         };
     }

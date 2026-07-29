@@ -10,7 +10,7 @@
 
 <div class="w-full flex justify-center mt-6">
   <mat-paginator
-    [length]="request.totalCount"
+    [length]="request.totalItems"
     [pageSize]="request.pageSize"
     (page)="onPageChange($event)">
   </mat-paginator>

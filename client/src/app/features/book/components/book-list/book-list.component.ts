@@ -1,14 +1,10 @@
 import { AfterViewChecked, Component, OnInit, ViewChild, inject } from '@angular/core';
-import { BookService } from '../../services/book.service';
+import { BookService } from '../../../../core/services/book.service';
 import { CommonModule } from '@angular/common';
 import { BookCardComponent } from '../book-card/book-card.component';
-import { Book } from '../../models/book.model';
+import { Book } from '../../../../core/models/book.model';
 import { MatPaginatorModule, PageEvent, MatPaginator } from '@angular/material/paginator';
-import { BookSearchRequest } from '../../models/bookSearchRequest';
-
-
-// import { Component, OnInit, inject, ViewChild, AfterViewChecked } from '@angular/core';
-// import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { BookSearchRequest } from '../../../../core/models/bookSearchRequest';
 
 @Component({
   selector: 'app-book-list',
@@ -24,7 +20,7 @@ export class BookListComponent implements OnInit, AfterViewChecked {
   request: BookSearchRequest = {
     pageIndex: 0,
     pageSize: 6,
-    totalCount: 0
+    totalItems: 0
   };
 
   bookService = inject(BookService);
@@ -42,7 +38,7 @@ export class BookListComponent implements OnInit, AfterViewChecked {
   loadBooks() {
     this.bookService.getBooks(this.request).subscribe(bookpage => {
       this.books = bookpage.items;
-      this.request.totalCount = bookpage.totalItems;
+      this.request.totalItems = bookpage.totalItems;
       this.request.pageIndex = bookpage.pageIndex;
       this.request.pageSize = bookpage.pageSize;
 
@@ -56,7 +52,7 @@ export class BookListComponent implements OnInit, AfterViewChecked {
   onPageChange(event: PageEvent) {
     this.request.pageIndex = event.pageIndex;
     this.request.pageSize = event.pageSize;
-    this.request.totalCount = event.length;
+    this.request.totalItems = event.length;
     this.loadBooks();
   }
 

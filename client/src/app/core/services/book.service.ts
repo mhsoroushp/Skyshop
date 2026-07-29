@@ -1,11 +1,9 @@
 import {Injectable, signal}  from '@angular/core';
 import {Book} from '../models/book.model';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { BookPaging } from '../models/bookPagin.model';
 import { BookSearchRequest } from '../models/bookSearchRequest';
-import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { BookPaging } from '../models/bookPagin.model';
 
 @Injectable({
   providedIn: 'root'

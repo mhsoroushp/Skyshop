@@ -1,18 +1,18 @@
 import { Component, inject, signal } from "@angular/core";
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Book } from "../../book/models/book.model";
+import { Book } from "../../../core/models/book.model";
 import { CommonModule } from "@angular/common";
 import { ShowBasketService } from "../../../core/services/show-basket.service";
-import { BookService } from "../../book/services/book.service";
+import { BookService } from "../../../core/services/book.service";
 import { catchError, of, switchMap } from "rxjs";
 
 @Component({
-    selector: 'app-shop-home', 
+    selector: 'app-shop', 
     standalone: true,
     imports: [CommonModule, RouterLink], 
-    templateUrl: './shop-home.component.html',
+    templateUrl: './shop.component.html',
 })
-export class ShopHomeComponent{
+export class ShopComponent{
 
     selectedBook = signal<Book | undefined>(undefined);
     isLoading = signal(true);
