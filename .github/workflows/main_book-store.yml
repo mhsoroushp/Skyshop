@@ -64,6 +64,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ${{ github.workspace }}/deploy-package
+
+      - name: Verify deploy package contents
+        run: ls -la ${{ github.workspace }}/deploy-package
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -78,5 +82,5 @@ jobs:
         with:
           app-name: 'book-store'
           slot-name: 'Production'
-          package: .
+          package: ${{ github.workspace }}/deploy-package
           
