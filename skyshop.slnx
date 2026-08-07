@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/API.Tests/API.Tests.csproj" />
+    <Project Path="Tests/Core.Tests/Core.Tests.csproj" />
+    <Project Path="Tests/Infrastructure.Tests/Infrastructure.Tests.csproj" />
+  </Folder>
   <Project Path="API/API.csproj" />
   <Project Path="Core/Core.csproj" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
