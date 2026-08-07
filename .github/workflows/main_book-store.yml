@@ -38,16 +38,19 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build skyshop.slnx --configuration Release --nologo
+
+      - name: Run tests
+        run: dotnet test skyshop.slnx --configuration Release --no-build --nologo
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish API/API.csproj -c Release --no-build -o ${{ github.workspace }}/publish
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{ github.workspace }}/publish
 
   deploy:
     runs-on: ubuntu-latest
@@ -61,6 +64,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ${{ github.workspace }}/deploy-package
+
+      - name: Verify deploy package contents
+        run: ls -la ${{ github.workspace }}/deploy-package
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -75,4 +82,5 @@ jobs:
         with:
           app-name: 'book-store'
           slot-name: 'Production'
-          package: .
+          package: ${{ github.workspace }}/deploy-package
+          
