@@ -43,7 +43,7 @@ public class AuthControllerTests
 		var result = await controller.Register(request);
 
 		// Assert
-		result.Should().BeOfType<OkObjectResult>();
+		result.Should().BeOfType<BadRequestObjectResult>();
 		userManagerMock.Verify(x => x.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
 		userManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
 	}
