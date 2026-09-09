@@ -1,0 +1,41 @@
+
+
+
+name: Test Workflow
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+      
+      # - name: Set up node.js
+      #   uses: actions/setup-node@v7
+      #   with:
+      #     node-version: '24.x'
+
+      # - name: Install Angular CLI
+      #   run: npm install -g @angular/cli@21 
+      
+      # - name: Install dependencies and run tests
+      #   run: |
+      #     cd client
+      #     npm install 
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.x'
+        
+      - name: Run tests with dotnet
+        run: dotnet test skyshop.slnx

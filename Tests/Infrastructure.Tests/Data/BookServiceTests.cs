@@ -5,13 +5,14 @@ using Core.Interfaces;
 using Core.Queries;
 using FluentAssertions;
 using Infrastructure.Data;
+using Infrastructure.Exceptions;
 using Moq;
 using Xunit;
 
 public class BookServiceTests
 {
     [Fact]
-    public async Task GetBookByIdAsync_Should_Return_Null_When_Book_Does_Not_Exist()
+    public async Task GetBookByIdAsync_Should_Return_NotFoundException_When_Book_Does_Not_Exist()
     {
         // Arrange
         var repoMock = new Mock<IBookRepository>();
@@ -23,10 +24,12 @@ public class BookServiceTests
         var service = new BookService(repoMock.Object, blobMock.Object);
 
         // Act
-        var result = await service.GetBookByIdAsync(Guid.NewGuid());
+        Func<Task> act = async () => await service.GetBookByIdAsync(Guid.NewGuid());
 
         // Assert
-        result.Should().BeNull();
+        await act.Should()
+            .ThrowAsync<NotFoundException>();
+
         blobMock.Verify(
             b => b.DownloadImageAsBytesAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
