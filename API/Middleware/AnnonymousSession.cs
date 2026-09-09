@@ -3,7 +3,7 @@ using System.Security.Claims;
 
 namespace API.Middleware;
 
-public class AnonymousSessionMiddleware(RequestDelegate next, IConnectionMultiplexer redis)
+public class AnonymousSession(RequestDelegate next, IConnectionMultiplexer redis)
 {
     private readonly RequestDelegate _next = next;
     private readonly IConnectionMultiplexer _redis = redis;
@@ -26,9 +26,7 @@ public class AnonymousSessionMiddleware(RequestDelegate next, IConnectionMultipl
             if (!string.IsNullOrEmpty(userId))
             {
                 context.Items["BasketKey"] = $"basket:user:{userId}";
-            }
-
-            
+            }            
 
             if (!string.IsNullOrEmpty(anonymousId))
             {

@@ -3,6 +3,7 @@ using Core.Interfaces;
 using Core.Queries;
 using API.DTOs;
 using Core.Entities;
+using Infrastructure.Exceptions;
 namespace Infrastructure.Data;
 
 
@@ -43,7 +44,7 @@ public class BookService : IBookService
         if (book == null)
         {
             // return NotFound(new {message = $"Book with id {id} not found."});
-            return null;
+            throw new NotFoundException($"Book with id {id} not found.");
         }
 
         return await ToBookDto(book);

@@ -67,6 +67,8 @@ if (app.Environment.IsDevelopment())
 
 }
 
+app.UseMiddleware<GlobalExceptionHandler>();
+
 app.UseCors(x => x
     .AllowAnyHeader()
     .AllowAnyMethod()
@@ -77,7 +79,7 @@ app.UseCors(x => x
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-app.UseMiddleware<AnonymousSessionMiddleware>();
+app.UseMiddleware<AnonymousSession>();
 app.UseAuthorization();
 
 
