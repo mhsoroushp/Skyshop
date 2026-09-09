@@ -1,6 +1,7 @@
 using Core.Interfaces;
 using Core.Entities;
 using Core.Enums;
+using Infrastructure.Exceptions;
 
 namespace Infrastructure.Data;
 
@@ -50,7 +51,7 @@ public class PaymentService : IPaymentService
     {
         var payment = await _paymentRepository.GetByIdAsync(paymentId);
         if (payment == null)
-            throw new InvalidOperationException($"Payment with id {paymentId} not found");
+            throw new NotFoundException($"Payment with id {paymentId} not found");
 
         payment.Status = status;
         payment.TransactionId = transactionId;
@@ -65,7 +66,7 @@ public class PaymentService : IPaymentService
     {
         var payment = await _paymentRepository.GetByIdAsync(paymentId);
         if (payment == null)
-            throw new InvalidOperationException($"Payment with id {paymentId} not found");
+            throw new NotFoundException($"Payment with id {paymentId} not found");
 
         payment.Status = PaymentStatus.Failed;
         payment.ErrorMessage = errorMessage;
