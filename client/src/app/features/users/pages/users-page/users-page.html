@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+<div class="flex flex-col gap-4">
+  <p>
+    Button placeholder
+  </p>
 
-@Component({
-  selector: 'app-users-page',
-  standalone: true,
-  imports: [],
-  templateUrl: './basket-list.component.html',
-  styleUrls: ['./basket-list.component.css']
-})
-export class UsersPage {}
+  <div *ngFor="let _user of userService.userSignal()">
+    <app-user-card [user]="_user"></app-user-card>
+  </div>
+
+</div>

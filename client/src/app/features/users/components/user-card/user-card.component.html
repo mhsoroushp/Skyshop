@@ -1,0 +1,52 @@
+<div class="px-[10px] flex flex-col gap-4">
+  <mat-card class="example-card px-[10px]" appearance="outlined">
+    <mat-card-content class="mb-4">
+      <div class="flex w-full flex-row flex-nowrap items-center">
+        <div class="basis-1/5">
+          <span class="shortcut">{{ user.firstName + ' ' + user.lastName | userInitials }}</span>
+        </div>
+        <div class="basis-4/5 min-w-0 flex flex-col items-start gap-1">
+          <strong>{{ user.firstName + ' ' + user.lastName }}</strong>
+          <span>{{ user.email }}</span>
+        </div>
+      </div>
+      <hr class="my-4" />
+    </mat-card-content>
+
+    <mat-card-footer class="pb-4">
+      <div class="flex w-full flex-col justify-between gap-2">
+
+        <span>Roles:</span>
+
+        <div class="flex flow-row flex-wrap gap-2">
+          @for (_role of user.roles; track _role){
+            <div class="inline-flex items-center bg-[#e2e4e5] rounded-full px-2.5 py-0.5 gap-1">
+                <span>{{ _role }}</span>
+                @if(user.roles.length > 1){
+                  <mat-icon (click)="handleRoleRemove(_role, user.id)" class="cursor-pointer rounded-full hover:bg-[#b5b8bc]">close</mat-icon>
+                }@else{
+                  <mat-icon>close</mat-icon>
+                }
+            </div>
+          }
+        </div>  
+
+        @if(user.remainingRoles.length > 0){
+        <div>
+          <mat-form-field class="full-width h-[65px]">
+            <mat-label>
+              + Add Role
+            </mat-label>
+            <mat-select (selectionChange)="handleRoleChange($event, user.id)">
+              @for (_remainingRole of user.remainingRoles; track _remainingRole) {
+                <mat-option [value]="_remainingRole">{{_remainingRole}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        }
+
+        </div>
+    </mat-card-footer>
+  </mat-card>
+</div>

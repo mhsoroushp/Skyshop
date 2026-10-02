@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, EMPTY, Observable, catchError, finalize, map, mapTo, of, shareReplay, tap, throwError } from 'rxjs';
+import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
 import { AuthState, AuthTokenResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
@@ -9,7 +9,6 @@ import { environment } from '../../../environments/environment';
 })
 export class AuthService {
   private readonly apiBaseUrl = environment.apiBaseUrl;
-  private accessToken: string | null = null;
   private refreshRequest$: Observable<AuthTokenResponse> | null = null;
   private authSignal = signal<AuthState | null>(null);
 
