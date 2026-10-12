@@ -9,6 +9,7 @@ using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
+using Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
 builder.Services.AddScoped<IStripeWebhookEventService, StripeWebhookEventService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped(typeof(IAppLogger<>), typeof(AppLogger<>));
 builder.Services.AddAuthorization();
 builder.Services
     .AddIdentityApiEndpoints<AppUser>()
@@ -51,6 +53,8 @@ builder.Services.AddDbContext<BookContext>(opt =>
 
 builder.Services.AddScoped<IBookRepository, BookRepository>(); 
 builder.Services.AddOpenApiDocument();
+
+builder.Services.AddObservability("SkyShop", builder.Configuration);
 
 
 var app = builder.Build();

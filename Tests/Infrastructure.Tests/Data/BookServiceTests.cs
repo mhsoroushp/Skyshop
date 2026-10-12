@@ -16,11 +16,12 @@ public class BookServiceTests
         // Arrange
         var repoMock = new Mock<IBookRepository>();
         var blobMock = new Mock<IBlobStorageService>();
+        var loggerMock = new Mock<IAppLogger<BookService>>();
 
         repoMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync((Book?)null);
 
-        var service = new BookService(repoMock.Object, blobMock.Object);
+        var service = new BookService(repoMock.Object, blobMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.GetBookByIdAsync(Guid.NewGuid());
@@ -38,6 +39,7 @@ public class BookServiceTests
         // Arrange
         var repoMock = new Mock<IBookRepository>();
         var blobMock = new Mock<IBlobStorageService>();
+        var loggerMock = new Mock<IAppLogger<BookService>>();
         var id = Guid.NewGuid();
         var book = new Book
         {
@@ -54,7 +56,7 @@ public class BookServiceTests
         blobMock.Setup(b => b.DownloadImageAsBytesAsync(book.CoverImageUrl!, It.IsAny<CancellationToken>()))
             .ReturnsAsync(bytes);
 
-        var service = new BookService(repoMock.Object, blobMock.Object);
+        var service = new BookService(repoMock.Object, blobMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.GetBookByIdAsync(id);
@@ -75,6 +77,7 @@ public class BookServiceTests
         // Arrange
         var repoMock = new Mock<IBookRepository>();
         var blobMock = new Mock<IBlobStorageService>();
+        var loggerMock = new Mock<IAppLogger<BookService>>();
         var query = new BookQueryParams { PageIndex = 1, PageSize = 2 };
 
         var books = new[]
@@ -114,7 +117,7 @@ public class BookServiceTests
         blobMock.Setup(b => b.DownloadImageAsBytesAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new byte[] { 7, 8 });
 
-        var service = new BookService(repoMock.Object, blobMock.Object);
+        var service = new BookService(repoMock.Object, blobMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.GetBooksAsync(query);
@@ -140,6 +143,7 @@ public class BookServiceTests
         // Arrange
         var repoMock = new Mock<IBookRepository>();
         var blobMock = new Mock<IBlobStorageService>();
+        var loggerMock = new Mock<IAppLogger<BookService>>();
         var query = new BookQueryParams();
         var book = new Book
         {
@@ -166,7 +170,7 @@ public class BookServiceTests
         blobMock.Setup(b => b.DownloadImageAsBytesAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("blob unavailable"));
 
-        var service = new BookService(repoMock.Object, blobMock.Object);
+        var service = new BookService(repoMock.Object, blobMock.Object, loggerMock.Object);
 
         // Act
         var result = await service.GetBooksAsync(query);
