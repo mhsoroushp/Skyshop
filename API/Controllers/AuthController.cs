@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Core.DTOs;
+using Core.Interfaces;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -16,12 +17,14 @@ public class AuthController(
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager,
     IOptionsMonitor<BearerTokenOptions> bearerTokenOptions,
-    TimeProvider timeProvider) : ControllerBase
+    TimeProvider timeProvider,
+    IAppLogger<AuthController> logger) : ControllerBase
 {
     private readonly UserManager<AppUser> _userManager = userManager;
     private readonly SignInManager<AppUser> _signInManager = signInManager;
     private readonly IOptionsMonitor<BearerTokenOptions> _bearerTokenOptions = bearerTokenOptions;
     private readonly TimeProvider _timeProvider = timeProvider;
+    private readonly IAppLogger<AuthController> _logger = logger;
 
     private const string RefreshTokenCookieName = "skyshop.refreshToken";
     private static readonly JsonSerializerOptions WebJsonOptions = new(JsonSerializerDefaults.Web);
@@ -30,6 +33,8 @@ public class AuthController(
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
+
+        _logger.LogInformation("Register attempt for email {Email}", request.Email);
 
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser is not null)

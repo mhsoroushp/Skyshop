@@ -11,14 +11,17 @@ public class BookService : IBookService
 {
     private readonly IBookRepository _bookRepo;
     private readonly IBlobStorageService _blobService;
+    private readonly IAppLogger<BookService> _logger;
 
     public BookService(
         IBookRepository bookRepository,
-        IBlobStorageService blobStorageService
+        IBlobStorageService blobStorageService,
+        IAppLogger<BookService> logger
         )
     {
         _bookRepo = bookRepository;
         _blobService = blobStorageService;
+        _logger = logger;
     }
 
     public async Task<BookPagingDto> GetBooksAsync(BookQueryParams bookQueryParams)
@@ -40,9 +43,13 @@ public class BookService : IBookService
 
     public async Task<BookDto> GetBookByIdAsync(Guid id)
     {
+        // TODO: remove later
+        _logger.LogInformation("(Hadi check): Fetching book with id {BookId}", id);
         var book = await _bookRepo.GetByIdAsync(id);
         if (book == null)
         {
+            _logger.LogWarning("Book not found for id {BookId}", id);
+            return null!;
             // return NotFound(new {message = $"Book with id {id} not found."});
             throw new NotFoundException($"Book with id {id} not found.");
         }
@@ -61,7 +68,7 @@ public class BookService : IBookService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error downloading image for book {book.Id}: {ex.Message}");
+            _logger.LogError(ex, "Error downloading image for book {BookId}", book.Id);
         }
 
         var bookDto = new BookDto

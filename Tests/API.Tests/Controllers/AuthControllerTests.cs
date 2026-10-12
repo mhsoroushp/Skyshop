@@ -2,6 +2,7 @@ namespace API.Tests.Controllers;
 
 using API.Controllers;
 using Core.DTOs;
+using Core.Interfaces;
 using FluentAssertions;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Authentication;
@@ -23,11 +24,13 @@ public class AuthControllerTests
 		var userManagerMock = CreateUserManagerMock();
 		var signInManagerMock = CreateSignInManagerMock(userManagerMock.Object);
 		var bearerOptionsMock = new Mock<IOptionsMonitor<BearerTokenOptions>>();
+		var loggerMock = new Mock<IAppLogger<AuthController>>();
 		var controller = new AuthController(
 			userManagerMock.Object,
 			signInManagerMock.Object,
 			bearerOptionsMock.Object,
-			TimeProvider.System);
+			TimeProvider.System,
+			loggerMock.Object);
 
 		var request = new RegisterRequest
 		{
@@ -56,11 +59,13 @@ public class AuthControllerTests
 		var userManagerMock = CreateUserManagerMock();
 		var signInManagerMock = CreateSignInManagerMock(userManagerMock.Object);
 		var bearerOptionsMock = new Mock<IOptionsMonitor<BearerTokenOptions>>();
+		var loggerMock = new Mock<IAppLogger<AuthController>>();
 		var controller = new AuthController(
 			userManagerMock.Object,
 			signInManagerMock.Object,
 			bearerOptionsMock.Object,
-			TimeProvider.System);
+			TimeProvider.System,
+			loggerMock.Object);
 
 		var request = new RegisterRequest
 		{
