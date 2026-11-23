@@ -41,4 +41,11 @@ export class HeaderComponent implements OnInit {
       this.router.navigate(['/auth']);
     });
   }
+
+  canManageAccounts(): boolean {
+    return !!(
+      this.authService.authState()?.isAuthenticated && 
+      this.authService.authState()?.roles?.some(role => role.toLowerCase().includes('admin'))
+    );
+  }
 }

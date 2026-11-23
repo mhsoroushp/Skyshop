@@ -21,6 +21,14 @@
       </mat-form-field>
     </div>
     <div class="right">
+      @if (canManageAccounts()) {
+      <button 
+        routerLink="/users"
+        class="cursor-pointer">
+        <mat-icon>manage_accounts</mat-icon>
+      </button>
+      }
+
       <a
         class="cart-link custom-badge mt-2 mr-2"
         routerLink="/checkout"
