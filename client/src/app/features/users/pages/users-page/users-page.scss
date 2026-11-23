@@ -17,3 +17,12 @@ h1 {
 main {
   padding: 20px;
 }
+
+.user-card-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 10px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

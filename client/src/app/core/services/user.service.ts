@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { User } from '../models/user.model';
 import { environment } from '../../../environments/environment';
@@ -29,6 +29,7 @@ export class UserService {
         } as User))),
         tap(mappedUsers => {
           this._userSignal.set(mappedUsers);
+
         })
       );
     }

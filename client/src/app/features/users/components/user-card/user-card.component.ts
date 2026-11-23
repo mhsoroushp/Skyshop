@@ -6,6 +6,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { UserInitialsPipe } from '../../../../core/pipes/user-initials.pipe';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-card',
@@ -27,6 +29,9 @@ export class UserCardComponent implements OnInit {
 
   _userService = inject(UserService)
   _snackBar = inject(SnackbarService);
+  _router = inject(Router);
+
+  _authService = inject(AuthService);
 
   handleRoleChange(event: any, userId: string) {
     this._userService.addUserRole(userId, event.value).subscribe({
@@ -42,7 +47,19 @@ export class UserCardComponent implements OnInit {
   handleRoleRemove(role: string, userid: string) {
     this._userService.removeUserRole(userid, role).subscribe({
       next: () => {
-        this.refreshUserRoles();
+        this._authService.refresh().subscribe({
+          next: () => {
+            if (!this.canManageAccounts()) {
+              this._router.navigateByUrl('/');
+              return;
+            }
+
+            this.refreshUserRoles();
+          },
+          error: (err) => {
+            this._snackBar.error('Failed to refresh auth state. Please try again.');
+          }
+        });
       },
       error: (err) => {
         this._snackBar.error('Failed to remove role. Please try again.');
@@ -57,6 +74,13 @@ export class UserCardComponent implements OnInit {
         this._snackBar.error('Failed to refresh user roles. Please try again.');
       }
     });
+  }
+
+  private canManageAccounts(): boolean {
+    return !!(
+      this._authService.authState()?.isAuthenticated && 
+      this._authService.authState()?.roles?.some(role => role.toLowerCase().includes('admin'))
+    );
   }
 
 }
