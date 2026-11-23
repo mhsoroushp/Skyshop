@@ -6,10 +6,15 @@ import { DashboardPage } from './features/dashboard/pages/dashboard/dashboard.co
 import { authGuard } from './core/guards/auth.guard';
 import { canDeactivateGuard } from './core/guards/can-deactivate.guard';
 import { ShopComponent } from './features/shop/page/shop.component';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {path : '', redirectTo: 'dashboard', pathMatch: 'full'},
-  {path: 'users', component: UsersPage},
+  {path: 'users',
+    loadComponent: () => import('./features/users/pages/users-page/users-page')
+      .then(c => c.UsersPage),
+      canActivate: [adminGuard],
+  },
 
   // {path: 'show-basket-list', component: BasketListComponent},
   {path: 'checkout', 
