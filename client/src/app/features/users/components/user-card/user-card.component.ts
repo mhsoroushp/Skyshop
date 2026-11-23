@@ -3,7 +3,7 @@ import { UserService } from '../../../../core/services/user.service';
 import type { User } from '../../../../core/models/user.model';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { UserInitialsPipe } from '../../../../core/pipes/user-initials.pipe';
 import { SnackbarService } from '../../../../core/services/snackbar.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
   templateUrl: './user-card.component.html',
   styleUrl: './user-card.component.scss',
   imports: [
+    MatIcon,
     UserInitialsPipe,
     MatIconModule,
     MatCardModule,
@@ -63,6 +64,18 @@ export class UserCardComponent implements OnInit {
       },
       error: (err) => {
         this._snackBar.error('Failed to remove role. Please try again.');
+      }
+    });
+  }
+
+  handleUserDelete(userId: string) {
+    this._userService.deleteUser(userId).subscribe({
+      next: () => {
+        this._userService.deleteUserSignal(userId);
+        this._snackBar.success('User deleted successfully.');
+      },
+      error: (err) => {
+        this._snackBar.error('Failed to delete user. Please try again.');
       }
     });
   }

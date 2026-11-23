@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Core.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
@@ -14,7 +15,7 @@ public class UserController(BookContext dbContext): ControllerBase
 {
 	private readonly BookContext _dbContext = dbContext;
 
-	// [Authorize(Roles = "Admin")]
+	[Authorize]
 	[HttpGet]
 	public async Task<ActionResult<IReadOnlyList<UserDto>>> GetAllUsersWithRoles()
 	{
@@ -75,6 +76,7 @@ public class UserController(BookContext dbContext): ControllerBase
 			.ToList();
 
 		return Ok(responses);
+
 	}
 
 	[HttpDelete]
@@ -178,4 +180,25 @@ public class UserController(BookContext dbContext): ControllerBase
 		return Ok();
 	}
 
+	[HttpDelete("deleteUser")]
+	[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> DeleteUser([FromQuery] string userId)
+	{
+		if (string.IsNullOrWhiteSpace(userId.Trim()))
+		{
+			return BadRequest("userId is required.");
+		}
+		var user = await _dbContext.Users
+			.FirstOrDefaultAsync(u => u.Id == userId);
+
+		if (user is null)
+		{
+			return NotFound("User not found.");
+		}
+
+		_dbContext.Users.Remove(user);
+		await _dbContext.SaveChangesAsync();
+
+		return NoContent();
+	}
 }

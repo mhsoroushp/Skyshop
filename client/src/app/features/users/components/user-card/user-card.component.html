@@ -5,9 +5,16 @@
         <div class="basis-1/5">
           <span class="shortcut">{{ user.firstName + ' ' + user.lastName | userInitials }}</span>
         </div>
-        <div class="basis-4/5 min-w-0 flex flex-col items-start gap-1">
+        <div class="basis-3/5 min-w-0 flex flex-col items-start gap-1">
           <strong>{{ user.firstName + ' ' + user.lastName }}</strong>
           <span>{{ user.email }}</span>
+        </div>
+        <div class="basis-1/5 flex justify-end">
+          <button 
+            class="text-red-600 hover:text-red-700 cursor-pointer"
+            (click)="handleUserDelete(user.id)">
+            <mat-icon>delete</mat-icon>
+          </button>
         </div>
       </div>
       <hr class="my-4" />

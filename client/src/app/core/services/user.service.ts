@@ -51,4 +51,13 @@ export class UserService {
       return this.http.post(`${this.apiBaseUrl}user/addRole`, body);
     }
 
+    deleteUser(userId: string) {
+      const params = new HttpParams().set('userId', userId);
+      return this.http.delete(`${this.apiBaseUrl}user/deleteUser`, { params });  
+    }
+
+    // Deletes a user from the signal without making an HTTP request (updates the local signal only)
+    deleteUserSignal(userid: string) {
+        this._userSignal.update(users => users.filter(user => user.id !== userid));
+    }
 }
